@@ -1,0 +1,24 @@
+import Stripe from 'stripe';
+
+let _stripe: Stripe | null = null;
+
+function getStripeInstance(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('Stripe is not configured. Set STRIPE_SECRET_KEY in your environment.');
+  }
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { typescript: true });
+  }
+  return _stripe;
+}
+
+/** Lazy Stripe client — only created when used and when STRIPE_SECRET_KEY is set. */
+export const stripe = new Proxy({} as Stripe, {
+  get(_, prop) {
+    return (getStripeInstance() as Record<string, unknown>)[prop as string];
+  },
+});
+
+export function getCommissionPercent(): number {
+  return parseInt(process.env.PLATFORM_COMMISSION_PERCENT ?? '10', 10);
+}

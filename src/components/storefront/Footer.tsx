@@ -1,0 +1,108 @@
+import Link from 'next/link';
+import { NewsletterForm } from './NewsletterForm';
+
+const SHOP_LINKS = [
+  { label: "Men", href: '/shop?category=men' },
+  { label: "Women", href: '/shop?category=women' },
+  { label: 'LGBTQ+', href: '/shop?category=lgbtq' },
+  { label: 'Wellness', href: '/shop?category=wellness' },
+  { label: 'Party', href: '/shop?category=party' },
+  { label: 'Exotic', href: '/shop?category=exotic' },
+  { label: 'Sale & Offers', href: '/shop?featured=1' },
+];
+
+const HELP_LINKS = [
+  { label: 'Contact', href: '#' },
+  { label: 'Shipping & Returns', href: '#' },
+  { label: 'FAQ', href: '#' },
+];
+
+export function Footer() {
+  return (
+    <footer className="bg-[var(--bg)] border-t" style={{ borderColor: 'var(--line)' }}>
+      <div className="max-w-[var(--content-max)] mx-auto px-6 py-14 md:py-16">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-16">
+          {/* Brand */}
+          <div className="lg:col-span-1">
+            <Link href="/" className="font-sans text-xl font-medium text-[var(--text)] tracking-tight">
+              InsyncX
+            </Link>
+            <p className="font-sans text-[13px] text-[var(--text-3)] mt-2 max-w-[220px] leading-relaxed">
+              Curated fashion for every identity.
+            </p>
+            <div className="flex gap-3 mt-5">
+              <a href="#" aria-label="Instagram" className="text-[var(--text-4)] hover:text-[var(--gold)] transition-colors shrink-0">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM12 5.838c-3.403 0-6.162 2.759-6.162 6.162S8.597 18.163 12 18.163s6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zM12 16c-2.269 0-4.109-1.841-4.109-4.109S9.731 7.782 12 7.782s4.109 1.841 4.109 4.109S14.269 16 12 16zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                </svg>
+              </a>
+              <a href="#" aria-label="Facebook" className="text-[var(--text-4)] hover:text-[var(--gold)] transition-colors shrink-0">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Shop */}
+          <div>
+            <p className="font-sans text-[11px] font-semibold uppercase tracking-wider text-[var(--text-4)] mb-4">
+              Shop
+            </p>
+            <ul className="flex flex-col gap-2.5">
+              {SHOP_LINKS.map(({ label, href }) => (
+                <li key={label}>
+                  <Link href={href} className="font-sans text-[13px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Help */}
+          <div>
+            <p className="font-sans text-[11px] font-semibold uppercase tracking-wider text-[var(--text-4)] mb-4">
+              Help
+            </p>
+            <ul className="flex flex-col gap-2.5">
+              {HELP_LINKS.map(({ label, href }) => (
+                <li key={label}>
+                  <Link href={href} className="font-sans text-[13px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter / CTA */}
+          <div>
+            <p className="font-sans text-[11px] font-semibold uppercase tracking-wider text-[var(--text-4)] mb-4">
+              Stay in sync
+            </p>
+            <p className="font-sans text-[13px] text-[var(--text-3)] mb-4">
+              New drops and offers. No spam.
+            </p>
+            <NewsletterForm />
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t" style={{ borderColor: 'var(--line)' }}>
+          <p className="font-sans text-[12px] text-[var(--text-4)]">
+            © 2025 InsyncX. All rights reserved.
+          </p>
+          <div className="flex items-center gap-6">
+            <Link href="#" className="font-sans text-[12px] text-[var(--text-4)] hover:text-[var(--text-3)] transition-colors">
+              Privacy
+            </Link>
+            <Link href="#" className="font-sans text-[12px] text-[var(--text-4)] hover:text-[var(--text-3)] transition-colors">
+              Terms
+            </Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
