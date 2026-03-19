@@ -2,8 +2,8 @@ import { Hero } from '@/components/storefront/Hero';
 import { Marquee } from '@/components/storefront/Marquee';
 import { CategoryGrid } from '@/components/storefront/CategoryGrid';
 import { NewArrivals } from '@/components/storefront/NewArrivals';
+import { LatestFromStores } from '@/components/storefront/LatestFromStores';
 import { OfficialPicksScroll } from '@/components/storefront/OfficialPicksScroll';
-import { PromoBanner } from '@/components/storefront/PromoBanner';
 import { VendorSpotlight } from '@/components/storefront/VendorSpotlight';
 import { CustomerSupportBanner } from '@/components/storefront/CustomerSupportBanner';
 import { FAQAccordion } from '@/components/storefront/FAQAccordion';
@@ -11,29 +11,36 @@ import { QuickInfoStrip } from '@/components/storefront/QuickInfoStrip';
 import { Footer } from '@/components/storefront/Footer';
 import {
   getCategories,
+  getNewArrivalsProducts,
   getLatestProducts,
   getOfficialStoreProducts,
   getApprovedStores,
   getFeaturedProducts,
 } from '@/actions/product.actions';
+import { getHomepageFeaturedCoupons } from '@/actions/coupon.actions';
+import { HomepageCouponSection } from '@/components/storefront/HomepageCouponSection';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   let categories: Awaited<ReturnType<typeof getCategories>> = [];
-  let newArrivals: Awaited<ReturnType<typeof getLatestProducts>> = [];
+  let newArrivals: Awaited<ReturnType<typeof getNewArrivalsProducts>> = [];
+  let latestProducts: Awaited<ReturnType<typeof getLatestProducts>> = [];
   let officialPicks: Awaited<ReturnType<typeof getOfficialStoreProducts>> = [];
   let stores: Awaited<ReturnType<typeof getApprovedStores>> = [];
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
+  let homepageCoupons: Awaited<ReturnType<typeof getHomepageFeaturedCoupons>> = [];
   let dbOk = true;
 
   try {
-    [categories, newArrivals, officialPicks, stores, featuredProducts] = await Promise.all([
+    [categories, newArrivals, latestProducts, officialPicks, stores, featuredProducts, homepageCoupons] = await Promise.all([
       getCategories(),
+      getNewArrivalsProducts(8),
       getLatestProducts(8),
       getOfficialStoreProducts(8),
       getApprovedStores(3),
       getFeaturedProducts(),
+      getHomepageFeaturedCoupons(),
     ]);
   } catch {
     dbOk = false;
@@ -52,8 +59,9 @@ export default async function HomePage() {
       <Marquee items={marqueeCategoryNames} />
       <CategoryGrid categories={categories} />
       <NewArrivals products={newArrivals} />
+      <LatestFromStores products={latestProducts} />
       <OfficialPicksScroll products={officialPicks} />
-      <PromoBanner />
+      {homepageCoupons.length > 0 && <HomepageCouponSection coupons={homepageCoupons} />}
       <VendorSpotlight stores={stores} />
       <CustomerSupportBanner />
       <FAQAccordion />

@@ -2,7 +2,7 @@ import { getOrderById } from '@/actions/order.actions';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getFirstProductImage } from '@/lib/utils';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Breadcrumb } from '@/components/storefront/Breadcrumb';
 import { OrderStatusStepper } from '@/components/account/OrderStatusStepper';
@@ -67,8 +67,7 @@ export default async function OrderDetailPage({ params }: Props) {
             </p>
           </div>
           {order.orderItems.map((oi) => {
-            const imgs = Array.isArray(oi.product.images) ? (oi.product.images as string[]) : [];
-            const img = imgs[0];
+            const img = getFirstProductImage(oi.product.images);
             const category = (oi.product as { category?: { name: string } }).category;
             return (
               <div
@@ -162,6 +161,21 @@ export default async function OrderDetailPage({ params }: Props) {
             )}
           </div>
 
+          {order.user && (
+            <div className="card card-p">
+              <h2 className="font-display text-[22px] font-normal mb-4" style={{ color: 'var(--text)' }}>
+                Contact
+              </h2>
+              <div className="font-sans text-[13px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
+                <p className="font-medium" style={{ color: 'var(--text)' }}>{order.user.name ?? '—'}</p>
+                {order.user.email && <p className="mt-0.5">{order.user.email}</p>}
+                {(order.user as { phone?: string }).phone && (
+                  <p className="mt-0.5">{(order.user as { phone?: string }).phone}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {address && (
             <div className="card card-p">
               <h2 className="font-display text-[22px] font-normal mb-4" style={{ color: 'var(--text)' }}>
@@ -178,7 +192,7 @@ export default async function OrderDetailPage({ params }: Props) {
                   {[
                     address.line1,
                     address.line2,
-                    [address.city, address.state, address.zip].filter(Boolean).join(', '),
+                    [address.city, address.state, (address as Record<string, unknown>).postalCode ?? (address as Record<string, unknown>).zip].filter(Boolean).join(', '),
                   ]
                     .filter(Boolean)
                     .map((line, i) => (
@@ -186,6 +200,11 @@ export default async function OrderDetailPage({ params }: Props) {
                         {String(line)}
                       </p>
                     ))}
+                  {(address as Record<string, unknown>).phone && (
+                    <p className="mt-2 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>
+                      Phone: {String((address as Record<string, unknown>).phone)}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

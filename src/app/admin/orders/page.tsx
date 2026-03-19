@@ -4,16 +4,53 @@ import { formatPrice } from '@/lib/utils';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { DataTable } from '@/components/shared/DataTable';
+import { ListSearchFilter } from '@/components/shared/ListSearchFilter';
 
-export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({
+const ORDER_STATUSES = [
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'CONFIRMED', label: 'Confirmed' },
+  { value: 'SHIPPED', label: 'Shipped' },
+  { value: 'DELIVERED', label: 'Delivered' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+];
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; status?: string }>;
+}) {
+  const { search = '', status } = await searchParams;
+  const ordersRaw = await prisma.order.findMany({
     include: { store: { select: { name: true } }, user: { select: { name: true, email: true } } },
     orderBy: { createdAt: 'desc' },
   });
 
+  let orders = ordersRaw;
+  if (status && ORDER_STATUSES.some((s) => s.value === status)) {
+    orders = orders.filter((o) => o.status === status);
+  }
+  if (search.trim()) {
+    const q = search.trim().toLowerCase();
+    orders = orders.filter(
+      (o) =>
+        o.id.toLowerCase().includes(q) ||
+        o.store.name.toLowerCase().includes(q) ||
+        (o.user.name?.toLowerCase().includes(q)) ||
+        (o.user.email?.toLowerCase().includes(q))
+    );
+  }
+
   return (
     <div>
-      <PageHeader title="All Orders" subtitle={`${orders.length} orders`} />
+      <PageHeader title="Orders" subtitle="View and manage all platform orders" />
+      <ListSearchFilter
+        basePath="/admin/orders"
+        placeholder="Search by order #, store, customer…"
+        currentSearch={search}
+        filters={[{ param: 'status', label: 'All statuses', options: ORDER_STATUSES }]}
+        currentFilters={status ? { status } : {}}
+      />
+      <div className="panel overflow-hidden mt-8">
       <DataTable empty={orders.length === 0} emptyTitle="No orders">
         <table className="w-full border-collapse">
           <thead style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--line)' }}>
@@ -33,7 +70,7 @@ export default async function AdminOrdersPage() {
                 <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>{o.store.name}</td>
                 <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>{o.user.name}</td>
                 <td className="py-3.5 px-4 font-sans text-[13px] font-semibold" style={{ color: 'var(--text)' }}>{formatPrice(Number(o.total))}</td>
-                <td className="py-3.5 px-4"><StatusBadge status={o.status} /></td>
+                <td className="py-3.5 px-4"><StatusBadge status={o.status} className="!px-4 !py-2" /></td>
                 <td className="py-3.5 px-4">
                   <Link href={`/admin/orders/${o.id}`} className="btn btn-ghost btn-sm">View</Link>
                 </td>
@@ -42,6 +79,7 @@ export default async function AdminOrdersPage() {
           </tbody>
         </table>
       </DataTable>
+      </div>
     </div>
   );
 }

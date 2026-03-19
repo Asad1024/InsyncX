@@ -20,7 +20,7 @@ export default async function VendorAnalyticsPage() {
     where: { ownerId: session.user.id },
   });
   if (!store) return <p className="text-[var(--text-3)]">No store.</p>;
-  const commission = getCommissionPercent();
+  const commission = await getCommissionPercent();
   const orders = await prisma.order.findMany({
     where: { storeId: store.id, status: { not: 'CANCELLED' } },
     select: { total: true, createdAt: true, status: true },
@@ -78,15 +78,18 @@ export default async function VendorAnalyticsPage() {
   return (
     <div>
       <PageHeader title="Analytics" subtitle="Your store performance" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 mt-8">
         <StatsCard label="Revenue" value={formatPrice(net)} icon={DollarSign} color="gold" />
         <StatsCard label="Orders" value={orders.length} icon={ShoppingBag} color="blue" />
-        <StatsCard label="Avg Order Value" value={formatPrice(avgOrder)} icon={TrendingUp} color="green" />
-        <StatsCard label="Total Products" value={productCount} icon={Package} color="red" />
+        <StatsCard label="Avg order value" value={formatPrice(avgOrder)} icon={TrendingUp} color="green" />
+        <StatsCard label="Total products" value={productCount} icon={Package} color="red" />
       </div>
-      <VendorAnalyticsCharts chartData={chartData} pieData={pieData} />
-      <div className="grid gap-6" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <DataTable header={{ title: 'Top Products' }} empty={topProducts.length === 0} emptyTitle="No sales yet">
+      <div className="panel p-6 mb-8">
+        <VendorAnalyticsCharts chartData={chartData} pieData={pieData} />
+      </div>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="panel overflow-hidden">
+        <DataTable header={{ title: 'Top products' }} empty={topProducts.length === 0} emptyTitle="No sales yet">
           <table className="w-full border-collapse">
             <thead style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--line)' }}>
               <tr>
@@ -115,6 +118,7 @@ export default async function VendorAnalyticsPage() {
             </tbody>
           </table>
         </DataTable>
+        </div>
       </div>
     </div>
   );

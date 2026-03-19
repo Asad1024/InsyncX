@@ -25,13 +25,28 @@ interface RevenueChartProps {
   height?: number;
 }
 
+/** Ensure at least 2 points so Recharts draws a line/area instead of a single dot */
+function ensureMinPoints(data: DataPoint[]): DataPoint[] {
+  if (data.length >= 2) return data;
+  if (data.length === 0) {
+    const d = new Date().toISOString().slice(0, 10);
+    return [{ date: d, value: 0 }, { date: d, value: 0 }];
+  }
+  const single = data[0];
+  const prevDate = new Date(single.date);
+  prevDate.setDate(prevDate.getDate() - 1);
+  const prevDateStr = prevDate.toISOString().slice(0, 10);
+  return [{ date: prevDateStr, value: 0 }, { date: single.date, value: single.value }];
+}
+
 export function RevenueChart({ title = 'Revenue', data, height = 240 }: RevenueChartProps) {
   const [range, setRange] = useState<(typeof RANGES)[number]>('30D');
+  const chartData = ensureMinPoints(data);
 
   return (
-    <div className="card flex flex-col" style={{ padding: 24 }}>
+    <div className="flex flex-col">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-display text-[22px] font-normal" style={{ color: 'var(--text)' }}>
+        <h2 className="font-display text-[20px] font-normal" style={{ color: 'var(--text)' }}>
           {title}
         </h2>
         <div className="flex gap-1.5">
@@ -54,7 +69,7 @@ export function RevenueChart({ title = 'Revenue', data, height = 240 }: RevenueC
       </div>
       <div style={{ width: '100%', height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
             <defs>
               <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--gold)" stopOpacity={0.15} />

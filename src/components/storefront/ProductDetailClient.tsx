@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useDisplaySettings } from '@/context/display-settings';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore } from '@/store/cart.store';
+import { useWishlistStore } from '@/store/wishlist.store';
 import { useToast } from '@/hooks/use-toast';
 import { addToCartDb } from '@/actions/cart.actions';
+import { addToWishlist } from '@/actions/user.actions';
 import { useSession } from 'next-auth/react';
 import { Heart, Minus, Plus, ShoppingBag, ExternalLink, Plus as PlusIcon } from 'lucide-react';
 import { ProductCard } from './ProductCard';
@@ -38,6 +41,7 @@ interface ProductDetailClientProps {
 }
 
 export function ProductDetailClient({ product, related }: ProductDetailClientProps) {
+  const { currencySymbol: symbol } = useDisplaySettings();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [openAccordion, setOpenAccordion] = useState<string | null>('description');
@@ -46,7 +50,13 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   const { toast } = useToast();
   const { addItem, openCart } = useCartStore();
   const { status } = useSession();
+  const { isInWishlist, hydrate, addProductId, hydrated } = useWishlistStore();
+  const inWishlist = isInWishlist(product.id);
   const img = product.images[selectedImage] ?? product.images[0];
+
+  useEffect(() => {
+    if (status === 'authenticated' && !hydrated) hydrate();
+  }, [status, hydrated, hydrate]);
 
   const avgRating =
     product.reviews.length > 0
@@ -77,6 +87,8 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
       price: product.price,
       image: product.images[0],
       slug: product.slug,
+      storeName: product.store.name,
+      storeSlug: product.store.slug,
     });
     if (status === 'authenticated') await addToCartDb(product.id, qty);
     openCart();
@@ -181,7 +193,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             </span>
             {product.comparePrice != null && product.comparePrice > product.price && (
               <span className="font-sans text-[18px] text-[var(--text-4)] line-through">
-                {formatPrice(product.comparePrice)}
+                {formatPrice(product.comparePrice, symbol)}
               </span>
             )}
             {savePercent > 0 && (
@@ -254,13 +266,27 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             )}
             Add to Cart
           </button>
-          <Link
-            href="/account/wishlist"
-            className="btn btn-secondary btn-full mb-7 flex items-center justify-center gap-2.5"
+          <button
+            type="button"
+            onClick={async () => {
+              if (status !== 'authenticated') {
+                toast({ title: 'Sign in to add to wishlist', variant: 'default' });
+                return;
+              }
+              const res = await addToWishlist(product.id);
+              if (res?.error) {
+                toast({ title: res.error, variant: 'default' });
+                return;
+              }
+              addProductId(product.id);
+              toast({ title: 'Added to wishlist', variant: 'success' });
+            }}
+            className={`btn btn-full mb-7 flex items-center justify-center gap-2.5 ${inWishlist ? 'border' : 'btn-secondary'}`}
+            style={inWishlist ? { borderColor: 'var(--line-gold)', color: 'var(--gold)', background: 'var(--gold-bg)' } : undefined}
           >
-            <Heart className="w-4 h-4" />
-            Add to Wishlist
-          </Link>
+            <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} fill={inWishlist ? 'currentColor' : 'none'} />
+            {inWishlist ? 'In wishlist' : 'Add to Wishlist'}
+          </button>
 
           <div className="h-px bg-[var(--line)]" />
 

@@ -48,21 +48,22 @@ export default async function VendorProductsPage({
     <div>
       <PageHeader
         title="Products"
-        subtitle={`${filtered.length} products in your store`}
+        subtitle="Manage your store inventory"
         actions={
-          <Link href="/vendor/products/new" className="btn btn-primary">
+          <Link href="/vendor/products/new" className="btn btn-primary rounded-xl px-5 py-2.5 font-sans text-[14px] font-semibold bg-[var(--gold)] text-black hover:opacity-90">
             <Plus className="w-4 h-4" />
-            Add Product
+            Add product
           </Link>
         }
       />
+      <div className="mt-8">
       <VendorProductFilters
         categories={categories}
         currentStatus={statusParam}
         currentSearch={searchParam ?? ''}
         currentCategory={categoryParam ?? ''}
       />
-      <div className="flex gap-1.5 mb-6">
+      <div className="flex gap-1.5 mb-6 mt-4">
           <Link
             href="/vendor/products"
             className={`font-sans text-[12px] font-medium py-1.5 px-3.5 rounded-full border cursor-pointer transition-all ${
@@ -88,6 +89,7 @@ export default async function VendorProductsPage({
             Inactive
           </Link>
         </div>
+      <div className="panel overflow-hidden">
       <DataTable empty={filtered.length === 0} emptyTitle="No products" emptySubtitle="Add your first product.">
         <table className="w-full border-collapse">
           <thead style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--line)' }}>
@@ -161,6 +163,8 @@ export default async function VendorProductsPage({
           </tbody>
         </table>
       </DataTable>
+      </div>
+      </div>
     </div>
   );
 }

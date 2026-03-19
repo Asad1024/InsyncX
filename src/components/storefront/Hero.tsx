@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useDisplaySettings } from '@/context/display-settings';
+import { formatPrice } from '@/lib/utils';
 import type { Product, Store, Category } from '@prisma/client';
 
 type ProductWithRelations = Product & {
@@ -12,13 +14,6 @@ type ProductWithRelations = Product & {
 interface HeroProps {
   featuredProducts?: ProductWithRelations[];
 }
-
-const QUICK_LINKS = [
-  { label: 'New Arrivals', href: '/shop' },
-  { label: 'Women', href: '/shop' },
-  { label: 'Men', href: '/shop' },
-  { label: 'Accessories', href: '/shop' },
-];
 
 // Hero-only images (ecomm/fashion — not used in product cards)
 const HERO_ONLY_IMAGES = [
@@ -42,8 +37,13 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function Hero({ featuredProducts = [] }: HeroProps) {
+  const displaySettings = useDisplaySettings();
   const images = useMemo(() => shuffle(HERO_ONLY_IMAGES), []);
   const [index, setIndex] = useState(0);
+  const freeShippingText =
+    displaySettings.freeShippingThreshold != null
+      ? `Free shipping on orders over ${formatPrice(displaySettings.freeShippingThreshold, displaySettings.currencySymbol)}`
+      : null;
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -95,20 +95,23 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
           Curated fashion for every identity. Discover pieces that move with you.
         </p>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          {QUICK_LINKS.map(({ label, href }) => (
-            <Link
-              key={label}
-              href={href}
-              className="inline-flex items-center justify-center rounded-md border border-white/30 bg-[var(--surface)]/80 px-5 py-3 font-sans text-[15px] font-normal tracking-wide text-white backdrop-blur-sm transition-colors hover:border-[var(--gold)]/40 hover:text-[var(--gold)]"
-            >
-              {label}
-            </Link>
-          ))}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="#fresh-arrivals"
+            className="inline-flex items-center justify-center rounded-md border-2 border-[var(--gold)] bg-[var(--surface)]/80 px-6 py-3 font-sans text-[15px] font-medium tracking-wide text-white backdrop-blur-sm transition-colors hover:bg-[var(--gold)]/10 hover:text-[var(--gold)]"
+          >
+            New arrivals
+          </a>
+          <Link
+            href="/shop"
+            className="inline-flex items-center justify-center rounded-md bg-[var(--gold)] px-6 py-3 font-sans text-[15px] font-semibold tracking-wide text-[#080808] transition-opacity hover:opacity-90"
+          >
+            Discover
+          </Link>
         </div>
 
         <p className="mt-8 font-sans text-[14px] font-normal text-white tracking-wide">
-          Free shipping on orders over ₹999 · Easy returns · Secure checkout
+          {freeShippingText ? `${freeShippingText} · ` : ''}Easy returns · Secure checkout
         </p>
       </div>
     </section>

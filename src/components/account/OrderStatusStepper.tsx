@@ -37,53 +37,44 @@ export function OrderStatusStepper({ currentStatus }: OrderStatusStepperProps) {
   }
 
   return (
-    <div className="card card-p">
-      <div className="flex items-start justify-between relative">
-        <div
-          className="absolute top-5 left-0 right-0 h-0.5 z-0"
-          style={{ background: 'var(--surface3)' }}
-        />
-        <div
-          className="absolute top-5 left-0 h-0.5 z-[1] transition-[width] duration-300 ease-out"
-          style={{
-            background: 'var(--gold)',
-            width: stepIndex >= 0 ? `${(stepIndex / (STEPS.length - 1)) * 100}%` : '0%',
-          }}
-        />
-        {STEPS.map((label, i) => {
-          const completed = i <= stepIndex;
-          const current = i === stepIndex;
-          return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+      {STEPS.map((label, i) => {
+        const completed = i <= stepIndex;
+        const current = i === stepIndex;
+        return (
+          <div
+            key={label}
+            className="rounded-xl border-2 p-4 flex flex-col items-center justify-center gap-3 min-h-[100px] w-full"
+            style={{
+              background: completed ? 'var(--gold-bg)' : 'var(--surface2)',
+              borderColor: current ? 'var(--gold)' : completed ? 'var(--line-gold)' : 'var(--line)',
+            }}
+          >
             <div
-              key={label}
-              className="flex flex-col items-center gap-2.5 relative z-[2]"
+              className="w-11 h-11 rounded-full flex items-center justify-center border-2 flex-shrink-0"
+              style={{
+                background: completed ? 'var(--gold)' : 'var(--surface3)',
+                borderColor: current && !completed ? 'var(--gold)' : completed ? 'var(--gold)' : 'var(--line)',
+              }}
             >
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center border-2 flex-shrink-0"
-                style={{
-                  background: completed ? 'var(--gold)' : 'var(--surface2)',
-                  borderColor: current && !completed ? 'var(--gold)' : completed ? 'var(--gold)' : 'var(--line)',
-                }}
-              >
-                {completed ? (
-                  <Check className="w-[18px] h-[18px] text-[#000]" strokeWidth={2.5} />
-                ) : (
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: current ? 'var(--gold)' : 'var(--text-4)' }}
-                  />
-                )}
-              </div>
-              <span
-                className="font-sans text-[12px] font-medium uppercase tracking-[0.06em]"
-                style={{ color: completed || current ? 'var(--text)' : 'var(--text-4)' }}
-              >
-                {label}
-              </span>
+              {completed ? (
+                <Check className="w-6 h-6 text-[#000]" strokeWidth={2.5} />
+              ) : (
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: current ? 'var(--gold)' : 'var(--text-4)' }}
+                />
+              )}
             </div>
-          );
-        })}
-      </div>
+            <span
+              className="font-sans text-[12px] font-semibold uppercase tracking-[0.06em] text-center"
+              style={{ color: completed || current ? 'var(--text)' : 'var(--text-4)' }}
+            >
+              {label}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef } from 'react';
 import Image from 'next/image';
-import { Upload, GripVertical, Trash2 } from 'lucide-react';
+import { Upload, GripVertical, Trash2, Loader2 } from 'lucide-react';
+import { uploadImages } from '@/actions/upload.actions';
 
 interface ImageUploadProps {
   value: string[];
@@ -12,18 +13,55 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange, maxCount = 10 }: ImageUploadProps) {
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const doUpload = useCallback(
+    async (files: File[]) => {
+      const imageFiles = files.filter((f) => f.type.startsWith('image/'));
+      if (imageFiles.length === 0) {
+        setError('Please select image files (JPG, PNG, WebP, GIF).');
+        return;
+      }
+      const remaining = maxCount - value.length;
+      const toUpload = imageFiles.slice(0, remaining);
+      if (toUpload.length === 0) {
+        setError(`Maximum ${maxCount} images allowed.`);
+        return;
+      }
+      setError('');
+      setUploading(true);
+      const formData = new FormData();
+      toUpload.forEach((f) => formData.append('files', f));
+      const result = await uploadImages(formData);
+      setUploading(false);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      if (result.urls?.length) onChange([...value, ...result.urls]);
+    },
+    [maxCount, value, onChange]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragging(false);
-      // Actual upload would go to Cloudinary via server action; here we only handle URLs or files.
       const files = Array.from(e.dataTransfer.files || []);
-      if (files.length === 0) return;
-      // If parent handles file upload, it would pass new URLs back via onChange.
-      // For now we don't add files directly - parent typically uses a server action.
+      if (files.length) doUpload(files);
     },
-    []
+    [doUpload]
+  );
+
+  const handleFileInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length) doUpload(files);
+      e.target.value = '';
+    },
+    [doUpload]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -42,7 +80,19 @@ export function ImageUpload({ value, onChange, maxCount = 10 }: ImageUploadProps
 
   return (
     <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        multiple
+        className="hidden"
+        onChange={handleFileInput}
+      />
       <div
+        role="button"
+        tabIndex={0}
+        onClick={() => !uploading && value.length < maxCount && inputRef.current?.click()}
+        onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
         className="border-2 border-dashed rounded-[14px] py-10 px-6 text-center cursor-pointer transition-all duration-200"
         style={{
           borderColor: dragging ? 'var(--line-gold)' : 'var(--line-md)',
@@ -52,14 +102,23 @@ export function ImageUpload({ value, onChange, maxCount = 10 }: ImageUploadProps
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
       >
-        <Upload className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-4)' }} />
+        {uploading ? (
+          <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" style={{ color: 'var(--gold)' }} />
+        ) : (
+          <Upload className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-4)' }} />
+        )}
         <p className="font-sans text-[14px] font-medium" style={{ color: 'var(--text-2)' }}>
-          Drop images here or click to upload
+          {uploading ? 'Uploading…' : 'Drop images here or click to upload'}
         </p>
         <p className="font-sans text-[12px] mt-1" style={{ color: 'var(--text-4)' }}>
-          PNG, JPG up to 10MB each
+          PNG, JPG, WebP, GIF up to 10MB each (local storage for testing)
         </p>
       </div>
+      {error && (
+        <p className="font-sans text-[12px] mt-2" style={{ color: 'var(--red)' }}>
+          {error}
+        </p>
+      )}
       {value.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
           {value.map((url, i) => (

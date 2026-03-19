@@ -305,33 +305,93 @@ body {
   margin-top: 6px;
 }
 
+/* ── Auth: same fonts as rest of app (Roboto via --font-sans / --font-display) ── */
+.auth-theme {
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+.auth-theme .font-display,
+.auth-theme h1, .auth-theme h2, .auth-theme h3, .auth-theme h4 {
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+.auth-theme .auth-submit-btn {
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Right panel: subtle radial glow behind form */
+.auth-right-panel {
+  position: relative;
+}
+.auth-right-panel::before {
+  content: '';
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(232,185,79,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.auth-right-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Left panel: 1px vertical divider on right edge */
+.auth-left-panel::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 76%;
+  background: linear-gradient(to bottom, transparent, rgba(232,185,79,0.22), transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
 /* ── Auth pages (login / register) ── */
+.auth-theme .input-group {
+  margin-bottom: 13px;
+}
 .auth-input {
   padding: 14px 16px;
   border-radius: 12px;
   font-size: 15px;
-  border: 1px solid var(--line);
-  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #1A1A1D;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  color: var(--text);
+}
+.auth-input::placeholder {
+  color: rgba(255,255,255,0.3);
 }
 .auth-input:hover {
-  border-color: var(--line-md);
+  border-color: rgba(255,255,255,0.12);
 }
 .auth-input:focus {
-  border-color: var(--line-gold);
-  box-shadow: 0 0 0 3px rgba(212,168,67,0.12);
+  border-color: rgba(232,185,79,0.45);
+  box-shadow: 0 0 0 3px rgba(232,185,79,0.12);
+  outline: none;
 }
 .auth-submit-btn {
-  background: linear-gradient(135deg, var(--gold) 0%, #c49b3a 100%);
-  color: #0a0a0a;
-  box-shadow: 0 4px 14px rgba(212,168,67,0.35);
+  background: #E8B94F;
+  color: #0D0D0F;
+  border-radius: 9px;
+  box-shadow: 0 4px 18px rgba(232,185,79,0.22);
 }
 .auth-submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #e0b84d 0%, var(--gold) 100%);
-  box-shadow: 0 6px 20px rgba(212,168,67,0.4);
+  background: #ecc55a;
+  box-shadow: 0 6px 22px rgba(232,185,79,0.28);
   transform: translateY(-1px);
 }
 .auth-submit-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+.auth-theme input[type="checkbox"] {
+  accent-color: #E8B94F;
 }
 
 /* ── Card Base ── */
@@ -349,6 +409,14 @@ body {
 .card-p { padding: 24px; }
 .card-p-lg { padding: 32px; }
 .card-p-xl { padding: 40px; }
+
+/* Dashboard/panel style (admin & vendor) */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+}
 
 /* ── Badge ── */
 .badge {

@@ -24,7 +24,8 @@ export default async function AdminOfficialStorePage() {
 
   return (
     <div>
-      <PageHeader title="InsyncX Official Store" subtitle={`${products.length} products`} />
+      <PageHeader title="Official store" subtitle="InsyncX official store products" />
+      <div className="panel overflow-hidden mt-8">
       <DataTable empty={products.length === 0} emptyTitle="No products in official store">
         <table className="w-full border-collapse">
           <thead style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--line)' }}>
@@ -61,6 +62,7 @@ export default async function AdminOfficialStorePage() {
           </tbody>
         </table>
       </DataTable>
+      </div>
     </div>
   );
 }

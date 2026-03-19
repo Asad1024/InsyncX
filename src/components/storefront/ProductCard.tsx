@@ -1,10 +1,14 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cart.store';
+import { useWishlistStore } from '@/store/wishlist.store';
 import { useToast } from '@/hooks/use-toast';
 import { addToCartDb } from '@/actions/cart.actions';
+import { addToWishlist } from '@/actions/user.actions';
 import { useSession } from 'next-auth/react';
+import { useDisplaySettings } from '@/context/display-settings';
 import { Heart } from 'lucide-react';
 import { formatPrice, getFirstProductImage } from '@/lib/utils';
 import type { Product, Store, Category } from '@prisma/client';
@@ -20,13 +24,20 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, variant = 'default' }: ProductCardProps) {
+  const { currencySymbol: symbol } = useDisplaySettings();
   const img = getFirstProductImage(product.images);
   const price = Number(product.price);
   const comparePrice = product.comparePrice != null ? Number(product.comparePrice) : null;
   const { addItem, openCart } = useCartStore();
   const { toast } = useToast();
   const { status } = useSession();
+  const { isInWishlist, hydrate, addProductId, hydrated } = useWishlistStore();
+  const inWishlist = isInWishlist(product.id);
   const savePercent = comparePrice != null && comparePrice > price ? Math.round((1 - price / comparePrice) * 100) : 0;
+
+  useEffect(() => {
+    if (status === 'authenticated' && !hydrated) hydrate();
+  }, [status, hydrated, hydrate]);
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,6 +49,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
       price,
       image: img ?? undefined,
       slug: product.slug,
+      storeName: product.store.name,
+      storeSlug: product.store.slug,
     });
     if (status === 'authenticated') addToCartDb(product.id, 1);
     openCart();
@@ -92,18 +105,37 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
         </div>
 
         {/* Wishlist */}
-        <Link
-          href="/account/wishlist"
-          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center border opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+        <button
+          type="button"
+          aria-label={inWishlist ? 'In wishlist' : 'Add to wishlist'}
+          className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-200 hover:scale-110 ${inWishlist ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
           style={{
             background: 'rgba(9,9,11,0.75)',
             backdropFilter: 'blur(8px)',
-            borderColor: 'var(--line-md)',
+            borderColor: inWishlist ? 'var(--line-gold)' : 'var(--line-md)',
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (status !== 'authenticated') {
+              toast({ title: 'Sign in to add to wishlist', variant: 'default' });
+              return;
+            }
+            const res = await addToWishlist(product.id);
+            if (res?.error) {
+              toast({ title: res.error, variant: 'default' });
+              return;
+            }
+            addProductId(product.id);
+            toast({ title: 'Added to wishlist', variant: 'success' });
+          }}
         >
-          <Heart className="w-3.5 h-3.5 text-[var(--text-3)]" strokeWidth={1.5} />
-        </Link>
+          <Heart
+            className={`w-3.5 h-3.5 ${inWishlist ? 'fill-[var(--gold)] text-[var(--gold)]' : 'text-[var(--text-3)]'}`}
+            strokeWidth={1.5}
+            fill={inWishlist ? 'currentColor' : 'none'}
+          />
+        </button>
 
         {/* Quick Add overlay */}
         <div
@@ -137,11 +169,11 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
         </p>
         <div className="flex items-center gap-2">
           <span className="font-sans text-[14px] font-semibold text-[var(--text)]">
-            {formatPrice(price)}
+            {formatPrice(price, symbol)}
           </span>
           {comparePrice != null && comparePrice > price && (
             <span className="font-sans text-[13px] text-[var(--text-4)] line-through">
-              {formatPrice(comparePrice)}
+              {formatPrice(comparePrice, symbol)}
             </span>
           )}
           {savePercent > 0 && (

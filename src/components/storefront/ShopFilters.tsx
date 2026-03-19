@@ -10,6 +10,8 @@ interface ShopFiltersProps {
   currentSort?: string;
   search?: string;
   totalCount: number;
+  newArrivals?: boolean;
+  featured?: boolean;
 }
 
 export function ShopFilters({
@@ -18,15 +20,17 @@ export function ShopFilters({
   currentSort = 'newest',
   search,
   totalCount,
+  newArrivals = false,
+  featured = false,
 }: ShopFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const update = (updates: Record<string, string>) => {
     const next = new URLSearchParams(searchParams.toString());
-    Object.entries(updates).forEach(([k, v]) => {
-      if (v) next.set(k, v);
-      else next.delete(k);
+    Object.entries(updates).forEach(([key, v]) => {
+      if (v) next.set(key, v);
+      else next.delete(key);
     });
     next.delete('page');
     router.push(`/shop?${next.toString()}`);
@@ -42,28 +46,40 @@ export function ShopFilters({
       }}
     >
       <div className="flex items-center gap-3">
-        <div className="relative max-w-[280px] w-full flex-shrink-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-4)]" />
+        <form
+          className="relative max-w-[280px] w-full flex-shrink-0 flex"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const input = e.currentTarget.querySelector<HTMLInputElement>('input[name="shop-search"]');
+            const value = input?.value?.trim() ?? '';
+            update({ search: value });
+          }}
+        >
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-4)] pointer-events-none z-10" />
           <input
             type="search"
-            placeholder="Search products…"
+            name="shop-search"
+            placeholder="Search by title, tags, description…"
             defaultValue={search}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                update({ search: (e.target as HTMLInputElement).value });
-              }
-            }}
-            className="w-full bg-[var(--surface2)] border rounded-[10px] py-3 pl-10 pr-4 font-sans text-[15px] text-[var(--text)] placeholder:text-[var(--text-4)] outline-none transition-all duration-150 focus:border-[var(--line-gold)] focus:shadow-[0_0_0_3px_rgba(212,168,67,0.10)]"
+            autoComplete="off"
+            className="w-full bg-[var(--surface2)] border rounded-[10px] py-3 pl-10 pr-10 font-sans text-[15px] text-[var(--text)] placeholder:text-[var(--text-4)] outline-none transition-all duration-150 focus:border-[var(--line-gold)] focus:shadow-[0_0_0_3px_rgba(212,168,67,0.10)]"
             style={{ borderColor: 'var(--line)' }}
           />
-        </div>
+          <button
+            type="submit"
+            aria-label="Search"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-4)] hover:text-[var(--gold)] hover:bg-[var(--gold-bg)] transition-colors"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+        </form>
 
         <div className="flex flex-1 gap-1.5 overflow-x-auto min-w-0 py-0.5" style={{ scrollbarWidth: 'none' }}>
           <button
             type="button"
-            onClick={() => update({ category: '', featured: '' })}
+            onClick={() => update({ category: '', featured: '', new: '' })}
             className={`font-sans text-[15px] font-medium py-2 px-4 rounded-full border shrink-0 whitespace-nowrap transition-all duration-150 ${
-              !currentCategory && !searchParams.get('featured')
+              !currentCategory && !searchParams.get('featured') && !searchParams.get('new')
                 ? 'bg-[var(--gold-bg)] border-[var(--line-gold)] text-[var(--gold)]'
                 : 'bg-transparent border-[var(--line)] text-[var(--text-3)] hover:border-[var(--line-md)] hover:text-[var(--text-2)]'
             }`}
@@ -72,9 +88,20 @@ export function ShopFilters({
           </button>
           <button
             type="button"
-            onClick={() => update({ featured: '1', category: '' })}
+            onClick={() => update({ new: '1', category: '', featured: '' })}
             className={`font-sans text-[15px] font-medium py-2 px-4 rounded-full border shrink-0 whitespace-nowrap transition-all duration-150 ${
-              searchParams.get('featured') === '1'
+              newArrivals || searchParams.get('new') === '1'
+                ? 'bg-[var(--gold-bg)] border-[var(--line-gold)] text-[var(--gold)]'
+                : 'bg-transparent border-[var(--line)] text-[var(--text-3)] hover:border-[var(--line-md)] hover:text-[var(--text-2)]'
+            }`}
+          >
+            New Arrivals
+          </button>
+          <button
+            type="button"
+            onClick={() => update({ featured: '1', category: '', new: '' })}
+            className={`font-sans text-[15px] font-medium py-2 px-4 rounded-full border shrink-0 whitespace-nowrap transition-all duration-150 ${
+              featured || searchParams.get('featured') === '1'
                 ? 'bg-[var(--gold-bg)] border-[var(--line-gold)] text-[var(--gold)]'
                 : 'bg-transparent border-[var(--line)] text-[var(--text-3)] hover:border-[var(--line-md)] hover:text-[var(--text-2)]'
             }`}
@@ -85,7 +112,7 @@ export function ShopFilters({
             <button
               key={c.id}
               type="button"
-              onClick={() => update({ category: c.slug, featured: '' })}
+              onClick={() => update({ category: c.slug, featured: '', new: '' })}
               className={`font-sans text-[15px] font-medium py-2 px-4 rounded-full border shrink-0 whitespace-nowrap transition-all duration-150 ${
                 currentCategory === c.slug
                   ? 'bg-[var(--gold-bg)] border-[var(--line-gold)] text-[var(--gold)]'

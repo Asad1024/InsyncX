@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { WishlistCard } from '@/components/account/WishlistCard';
+import { WishlistHydrate } from '@/components/account/WishlistHydrate';
 import { Heart } from 'lucide-react';
 import { clearWishlist } from '@/actions/user.actions';
 
@@ -21,9 +22,11 @@ export default async function WishlistPage() {
     },
   });
   const products = items.map((i) => i.product).filter(Boolean);
+  const productIds = products.map((p) => p.id);
 
   return (
     <div className="py-10 px-12" style={{ padding: '40px 48px' }}>
+      <WishlistHydrate productIds={productIds} />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1

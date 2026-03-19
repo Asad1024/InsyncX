@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
@@ -11,6 +12,7 @@ import {
   BarChart2,
   Wallet,
   Tag,
+  Settings,
   ExternalLink,
   LogOut,
 } from 'lucide-react';
@@ -31,6 +33,7 @@ const insightsNav = [
   { href: '/vendor/payouts', label: 'Payouts', icon: Wallet },
   { href: '/vendor/coupons', label: 'Coupons', icon: Tag },
 ];
+const systemNav = [{ href: '/vendor/settings', label: 'Settings', icon: Settings }];
 
 function NavLink({
   href,
@@ -70,9 +73,9 @@ export function VendorSidebar({ storeName, storeSlug }: VendorSidebarProps) {
         borderRight: '1px solid var(--line)',
       }}
     >
-      <div className="py-5 px-4 pb-4 border-b flex items-center gap-2.5" style={{ borderColor: 'var(--line)' }}>
-        <Link href="/vendor" className="font-display text-[20px] font-normal" style={{ color: 'var(--text)' }}>
-          InsyncX
+      <div className="py-5 px-4 pb-4 border-b flex items-center justify-center gap-2.5" style={{ borderColor: 'var(--line)' }}>
+        <Link href="/vendor" className="flex items-center justify-center no-underline shrink-0">
+          <Image src="/InsyncX%20logo.avif" alt="" width={52} height={52} className="shrink-0 object-contain" />
         </Link>
         <span
           className="font-sans text-[9px] font-bold uppercase py-0.5 px-2 rounded-full border"
@@ -119,6 +122,15 @@ export function VendorSidebar({ storeName, storeSlug }: VendorSidebarProps) {
           Insights
         </p>
         {insightsNav.map((item) => (
+          <NavLink key={item.href} pathname={pathname} {...item} />
+        ))}
+        <p
+          className="font-sans text-[10px] font-medium uppercase tracking-[0.1em] pt-4 pb-1.5 px-2"
+          style={{ color: 'var(--text-4)' }}
+        >
+          System
+        </p>
+        {systemNav.map((item) => (
           <NavLink key={item.href} pathname={pathname} {...item} />
         ))}
       </nav>

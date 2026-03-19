@@ -29,7 +29,7 @@ function GoogleIcon({ className }: { className?: string }) {
 
 interface GoogleSignInButtonProps {
   callbackUrl?: string;
-  /** Optional short label, e.g. "Google" - if not set, only icon is shown */
+  /** Button label; defaults to "Continue with Google" */
   label?: string;
 }
 
@@ -38,7 +38,7 @@ interface GoogleSignInButtonProps {
  * A GET to /api/auth/signin/google hits the signin page render and throws UnknownAction.
  * Using signIn('google', { callbackUrl }) POSTs correctly.
  */
-export function GoogleSignInButton({ callbackUrl = '/', label }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ callbackUrl = '/', label = 'Continue with Google' }: GoogleSignInButtonProps) {
   const [loading, setLoading] = useState(false);
 
   const handleClick = async (e: React.MouseEvent) => {
@@ -60,12 +60,11 @@ export function GoogleSignInButton({ callbackUrl = '/', label }: GoogleSignInBut
       style={{ color: 'var(--text-2)' }}
     >
       <GoogleIcon className="w-5 h-5 shrink-0" />
-      {label ? (
+      {!loading ? (
         <span className="font-sans text-[14px] font-medium">{label}</span>
-      ) : null}
-      {loading ? (
+      ) : (
         <span className="font-sans text-[14px]">Redirecting…</span>
-      ) : null}
+      )}
     </button>
   );
 }

@@ -2,16 +2,17 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { ListSearchFilter } from '@/components/shared/ListSearchFilter';
 import { ApproveVendor } from '@/components/admin/ApproveVendor';
 import { Package, ShoppingBag } from 'lucide-react';
 
 export default async function AdminVendorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; search?: string }>;
 }) {
-  const { filter } = await searchParams;
-  const stores = await prisma.store.findMany({
+  const { filter, search = '' } = await searchParams;
+  const storesRaw = await prisma.store.findMany({
     where: filter === 'pending' ? { isApproved: false } : filter === 'approved' ? { isApproved: true, isOfficial: false } : { isOfficial: false },
     include: {
       owner: { select: { name: true, email: true } },
@@ -19,6 +20,13 @@ export default async function AdminVendorsPage({
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  const stores = search.trim()
+    ? storesRaw.filter((s) => {
+        const q = search.trim().toLowerCase();
+        return s.name.toLowerCase().includes(q) || s.owner.name.toLowerCase().includes(q) || s.owner.email.toLowerCase().includes(q);
+      })
+    : storesRaw;
 
   const tabs = [
     { label: 'All', href: '/admin/vendors' },
@@ -28,8 +36,8 @@ export default async function AdminVendorsPage({
 
   return (
     <div>
-      <PageHeader title="Vendor Stores" subtitle={`${stores.length} stores on the platform`} />
-      <div className="flex gap-0 border-b mb-6" style={{ borderColor: 'var(--line)' }}>
+      <PageHeader title="Vendor stores" subtitle="Approve and manage vendor storefronts" />
+      <div className="flex gap-0 border-b mb-6 mt-8" style={{ borderColor: 'var(--line)' }}>
         {tabs.map(({ label, href }) => (
           <Link
             key={href}
@@ -44,9 +52,10 @@ export default async function AdminVendorsPage({
           </Link>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <ListSearchFilter basePath="/admin/vendors" placeholder="Search by store or owner name…" currentSearch={search} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stores.map((s) => (
-          <div key={s.id} className="card overflow-hidden">
+          <div key={s.id} className="panel overflow-hidden">
             <div className="relative overflow-hidden" style={{ aspectRatio: '16/6', background: 'var(--surface3)' }}>
               {s.banner ? (
                 <Image src={s.banner} alt="" fill className="object-cover" />
@@ -72,7 +81,9 @@ export default async function AdminVendorsPage({
                     <p className="font-sans text-[12px] mt-0.5" style={{ color: 'var(--text-3)' }}>{s.owner.name}</p>
                   </div>
                 </div>
-                <span className={s.isApproved ? 'badge badge-green' : 'badge badge-amber'}>{s.isApproved ? 'Approved' : 'Pending'}</span>
+                <span className={s.isApproved ? 'badge badge-green' : s.declinedAt ? 'badge badge-red' : 'badge badge-amber'}>
+                  {s.isApproved ? 'Approved' : s.declinedAt ? 'Declined' : 'Pending'}
+                </span>
               </div>
               <div className="flex gap-4 mb-4">
                 <span className="font-sans text-[12px] flex items-center gap-1" style={{ color: 'var(--text-3)' }}>
@@ -84,6 +95,11 @@ export default async function AdminVendorsPage({
               </div>
               <div className="flex gap-2">
                 {!s.isApproved && <ApproveVendor storeId={s.id} />}
+                {!s.isApproved && s.declinedAt && (
+                  <Link href={`/admin/vendors/${s.id}`} className="btn btn-ghost btn-sm text-[var(--red)]">
+                    Review again
+                  </Link>
+                )}
                 <Link href={`/admin/vendors/${s.id}`} className="btn btn-ghost btn-sm">
                   View
                 </Link>

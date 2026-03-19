@@ -29,3 +29,20 @@ export async function updateStore(
   revalidatePath(`/store/${store.slug}`);
   return { success: true };
 }
+
+/** Vendor: clear declined state and put store back in pending for admin review. */
+export async function requestApprovalAgain(storeId: string): Promise<{ success?: true; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Not signed in' };
+  const store = await prisma.store.findUnique({ where: { id: storeId } });
+  if (!store) return { error: 'Store not found' };
+  if (store.ownerId !== session.user.id) return { error: 'Forbidden' };
+  if (!store.declinedAt) return { error: 'Store is not declined.' };
+  await prisma.store.update({
+    where: { id: storeId },
+    data: { declinedAt: null, declineReason: null },
+  });
+  revalidatePath('/vendor/store');
+  revalidatePath('/admin/vendors');
+  return { success: true };
+}

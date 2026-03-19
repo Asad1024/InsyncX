@@ -8,13 +8,16 @@ import { X, Home, ShoppingBag, Star, LayoutGrid, LayoutDashboard, ShoppingCart, 
 const MENU_LINKS = [
   { label: 'Home', href: '/', icon: Home },
   { label: 'Shop', href: '/shop', icon: ShoppingBag },
+  { label: 'New Arrivals', href: '/shop?new=1', icon: Star },
   { label: 'Featured', href: '/shop?featured=1', icon: Star },
   { label: 'Collections', href: '/shop', icon: LayoutGrid },
 ];
 
 const CATEGORY_LINKS = [
-  { label: 'Men', href: '/shop?category=men' },
+  { label: 'New Arrivals', href: '/shop?new=1' },
   { label: 'Women', href: '/shop?category=women' },
+  { label: 'Men', href: '/shop?category=men' },
+  { label: 'Accessories', href: '/shop?category=accessories' },
   { label: 'LGBTQ+', href: '/shop?category=lgbtq' },
   { label: 'Wellness', href: '/shop?category=wellness' },
   { label: 'Party', href: '/shop?category=party' },

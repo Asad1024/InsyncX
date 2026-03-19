@@ -33,7 +33,11 @@ export function NewArrivals({ products }: NewArrivalsProps) {
       : products.filter((p) => p.category.slug === activeTab);
 
   return (
-    <section className="py-20 px-12 bg-[var(--surface)] border-t" style={{ borderColor: 'var(--line)' }}>
+    <section
+      id="fresh-arrivals"
+      className="py-20 px-12 bg-[var(--surface)] border-t scroll-mt-[var(--nav-h)]"
+      style={{ borderColor: 'var(--line)' }}
+    >
       <div className="flex items-end justify-between mb-10">
         <div>
           <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.1em] text-[var(--text-4)]">Just Dropped</p>

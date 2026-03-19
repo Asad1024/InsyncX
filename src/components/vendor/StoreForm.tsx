@@ -28,26 +28,60 @@ export function StoreForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md space-y-4">
-      <div>
-        <Label htmlFor="name">Store name</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1" />
-      </div>
-      <div>
-        <Label htmlFor="slug">URL slug</Label>
-        <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} required className="mt-1" />
-        <p className="text-xs text-muted mt-1">/store/{slug}</p>
-      </div>
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="flex min-h-[100px] w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-white mt-1"
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="store-name" className="font-sans text-[13px] font-medium" style={{ color: 'var(--text-2)' }}>
+          Store name
+        </Label>
+        <Input
+          id="store-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="rounded-xl border bg-[var(--surface2)] px-4 py-2.5 font-sans text-[14px] text-[var(--text)] placeholder:text-[var(--text-4)] focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+          placeholder="e.g. My Store"
         />
       </div>
-      <Button type="submit" disabled={loading}>Save</Button>
+
+      <div className="space-y-2">
+        <Label htmlFor="store-slug" className="font-sans text-[13px] font-medium" style={{ color: 'var(--text-2)' }}>
+          URL slug
+        </Label>
+        <Input
+          id="store-slug"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+          required
+          className="rounded-xl border bg-[var(--surface2)] px-4 py-2.5 font-sans text-[14px] text-[var(--text)] placeholder:text-[var(--text-4)] focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
+          placeholder="my-store"
+        />
+        <p className="font-sans text-[12px]" style={{ color: 'var(--text-4)' }}>
+          Your store will be at: <span style={{ color: 'var(--text-3)' }}>/store/{slug || '…'}</span>
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="store-desc" className="font-sans text-[13px] font-medium" style={{ color: 'var(--text-2)' }}>
+          Description
+        </Label>
+        <textarea
+          id="store-desc"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="w-full rounded-xl border bg-[var(--surface2)] px-4 py-3 font-sans text-[14px] text-[var(--text)] placeholder:text-[var(--text-4)] focus:outline-none focus:ring-2 focus:ring-[var(--gold)] focus:ring-offset-2 focus:ring-offset-[var(--bg)] resize-y min-h-[100px]"
+          style={{ borderColor: 'var(--line-md)' }}
+          placeholder="Tell customers what your store is about..."
+        />
+      </div>
+
+      <Button
+        type="submit"
+        disabled={loading}
+        className="rounded-xl px-6 py-2.5 font-sans text-[14px] font-semibold bg-[var(--gold)] text-black hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:opacity-60"
+      >
+        {loading ? 'Saving…' : 'Save changes'}
+      </Button>
     </form>
   );
 }

@@ -8,11 +8,13 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { searchProducts, getCategoriesWithProducts } from '@/actions/product.actions';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useDisplaySettings } from '@/context/display-settings';
 import { formatPrice } from '@/lib/utils';
 
 type CategoryOption = { name: string; slug: string };
 
 export function SearchOverlay() {
+  const { currencySymbol: symbol } = useDisplaySettings();
   const { searchOpen, setSearchOpen } = useUIStore();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Awaited<ReturnType<typeof searchProducts>>>([]);
@@ -109,20 +111,23 @@ export function SearchOverlay() {
         {!query.trim() && (
           <div className="mb-8">
             <p className="font-sans text-[10px] font-medium uppercase tracking-[0.1em] text-zinc-400 mb-3">
-              Try searching for
+              Browse by category
             </p>
             <div className="flex flex-wrap gap-2">
               {suggestedCategories.map((cat) => (
-                <button
+                <Link
                   key={cat.slug}
-                  type="button"
-                  onClick={() => setQuery(cat.name)}
-                  className="font-sans text-[12px] font-medium py-2 px-4 rounded-full bg-white/10 border border-white/25 text-zinc-200 cursor-pointer hover:border-[var(--line-gold)] hover:text-[var(--gold)] transition-[var(--ease)]"
+                  href={`/shop?category=${encodeURIComponent(cat.slug)}`}
+                  onClick={() => setSearchOpen(false)}
+                  className="font-sans text-[12px] font-medium py-2 px-4 rounded-full bg-white/10 border border-white/25 text-zinc-200 cursor-pointer hover:border-[var(--line-gold)] hover:text-[var(--gold)] transition-[var(--ease)] inline-block"
                 >
                   {cat.name}
-                </button>
+                </Link>
               ))}
             </div>
+            <p className="font-sans text-[10px] font-medium uppercase tracking-[0.1em] text-zinc-400 mt-4 mb-2">
+              Or search by title, description, or tags
+            </p>
           </div>
         )}
 
@@ -160,7 +165,7 @@ export function SearchOverlay() {
                         {p.title}
                       </p>
                       <p className="font-sans text-[13px] text-[var(--gold)]">
-                        {formatPrice(Number(p.price))}
+                        {formatPrice(Number(p.price), symbol)}
                       </p>
                     </div>
                   </Link>

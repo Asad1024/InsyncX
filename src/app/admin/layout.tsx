@@ -17,7 +17,7 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen grid" style={{ gridTemplateColumns: 'var(--sidebar-w) 1fr' }}>
       <AdminSidebar pendingVendorsCount={pendingVendorsCount} />
-      <main className="bg-[var(--bg)] overflow-y-auto min-h-screen max-w-[1200px] mx-auto" style={{ padding: '40px 40px' }}>
+      <main className="bg-[var(--bg)] overflow-y-auto min-h-screen w-full" style={{ padding: '32px 32px 48px' }}>
         {children}
       </main>
     </div>

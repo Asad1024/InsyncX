@@ -23,7 +23,7 @@ export function DataTable({
   emptySubtitle,
 }: DataTableProps) {
   return (
-    <div className="card overflow-hidden">
+    <div className="panel overflow-hidden">
       {header != null && (header.title != null || header.actions != null) && (
         <div
           className="flex items-center justify-between py-5 px-6 border-b"

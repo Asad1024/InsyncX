@@ -11,6 +11,9 @@
 /.next/
 /out/
 
+# local uploads (testing)
+/public/uploads/
+
 # production
 /build
 
@@ -23,7 +26,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
+# env — use a single local `.env` (never commit). Template: `.env.example`
+.env
 .env*.local
 
 # vercel

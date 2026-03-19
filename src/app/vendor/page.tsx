@@ -35,7 +35,7 @@ export default async function VendorDashboardPage() {
       </div>
     );
   }
-  const commission = getCommissionPercent();
+  const commission = await getCommissionPercent();
   const where = store ? { storeId: store.id } : {};
   const [
     ordersCount,
@@ -89,7 +89,7 @@ export default async function VendorDashboardPage() {
     <div>
       {!store?.isApproved && store && (
         <div
-          className="mb-6 p-4 border rounded-[10px] font-sans text-[13px]"
+          className="panel mb-8 p-4 font-sans text-[13px]"
           style={{
             background: 'var(--amber-bg)',
             borderColor: 'rgba(245,158,11,0.2)',
@@ -110,21 +110,23 @@ export default async function VendorDashboardPage() {
           ) : null
         }
       />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 mt-8">
         <StatsCard label="Revenue" value={formatPrice(netRevenue)} icon={DollarSign} color="gold" />
         <StatsCard label="Orders" value={ordersCount} icon={ShoppingBag} color="blue" />
         <StatsCard label="Products" value={productsCount} icon={Package} color="green" />
         <StatsCard label="Low Stock Alerts" value={lowStockCount} icon={AlertTriangle} color="red" />
       </div>
-      <div className="grid gap-6 mb-6" style={{ gridTemplateColumns: '60% 1fr' }}>
-        <RevenueChart title="Revenue" data={chartData} />
-        <div className="card overflow-hidden">
+      <div className="grid gap-8 mb-8 lg:grid-cols-[1fr_400px]">
+        <div className="panel p-6">
+          <RevenueChart title="Revenue" data={chartData} />
+        </div>
+        <div className="panel overflow-hidden">
           <div
             className="flex items-center justify-between py-5 px-6 border-b"
             style={{ borderColor: 'var(--line)' }}
           >
-            <h2 className="font-display text-[22px] font-normal" style={{ color: 'var(--text)' }}>
-              Recent Orders
+            <h2 className="font-display text-[20px] font-normal" style={{ color: 'var(--text)' }}>
+              Recent orders
             </h2>
             <Link href="/vendor/orders" className="inline-flex items-center gap-1.5 font-sans text-[13px] font-medium" style={{ color: 'var(--gold)' }}>
               View All <ArrowRight className="w-4 h-4" />
@@ -160,14 +162,14 @@ export default async function VendorDashboardPage() {
           )}
         </div>
       </div>
-      <div className="grid gap-6" style={{ gridTemplateColumns: '1fr 1fr' }}>
-        <div className="card overflow-hidden">
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="panel overflow-hidden">
           <div
             className="flex items-center justify-between py-5 px-6 border-b"
             style={{ borderColor: 'var(--line)' }}
           >
-            <h2 className="font-display text-[22px] font-normal" style={{ color: 'var(--text)' }}>
-              Low Stock
+            <h2 className="font-display text-[20px] font-normal" style={{ color: 'var(--text)' }}>
+              Low stock
             </h2>
             {lowStockCount > 0 && (
               <span className="badge badge-red">{lowStockCount}</span>
@@ -212,10 +214,13 @@ export default async function VendorDashboardPage() {
             })
           )}
         </div>
-        <div className="card card-p">
-          <h2 className="font-display text-[22px] font-normal mb-5" style={{ color: 'var(--text)' }}>
-            Quick Actions
+        <div className="panel p-6">
+          <h2 className="font-display text-[20px] font-normal mb-1" style={{ color: 'var(--text)' }}>
+            Quick actions
           </h2>
+          <p className="font-sans text-[13px] mb-5" style={{ color: 'var(--text-3)' }}>
+            Shortcuts for common tasks
+          </p>
           <Link
             href="/vendor/products/new"
             className="flex items-center gap-3.5 py-3 px-3 rounded-[10px] border mb-2.5 no-underline transition-colors hover:bg-[var(--surface2)]"

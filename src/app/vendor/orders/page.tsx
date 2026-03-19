@@ -5,11 +5,12 @@ import { formatPrice } from '@/lib/utils';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { DataTable } from '@/components/shared/DataTable';
+import { ListSearchFilter } from '@/components/shared/ListSearchFilter';
 
 export default async function VendorOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; search?: string }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) return null;
@@ -24,11 +25,20 @@ export default async function VendorOrdersPage({
     include: { user: { select: { name: true, email: true } } },
     orderBy: { createdAt: 'desc' },
   });
-  const { status: statusParam } = await searchParams;
-  const filtered =
+  const { status: statusParam, search: searchParam = '' } = await searchParams;
+  let filtered =
     statusParam && ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED'].includes(statusParam)
       ? orders.filter((o) => o.status === statusParam)
       : orders;
+  if (searchParam.trim()) {
+    const q = searchParam.trim().toLowerCase();
+    filtered = filtered.filter(
+      (o) =>
+        o.id.toLowerCase().includes(q) ||
+        (o.user.name?.toLowerCase().includes(q)) ||
+        (o.user.email?.toLowerCase().includes(q))
+    );
+  }
 
   const tabs = [
     { label: 'All', href: '/vendor/orders' },
@@ -41,7 +51,7 @@ export default async function VendorOrdersPage({
   return (
     <div>
       <PageHeader title="Orders" subtitle="Manage and track your orders" />
-      <div className="flex gap-0 border-b mb-6" style={{ borderColor: 'var(--line)' }}>
+      <div className="flex gap-0 border-b mb-6 mt-8" style={{ borderColor: 'var(--line)' }}>
         {tabs.map(({ label, href }) => (
           <Link
             key={href}
@@ -56,6 +66,8 @@ export default async function VendorOrdersPage({
           </Link>
         ))}
       </div>
+      <ListSearchFilter basePath="/vendor/orders" placeholder="Search by order # or customer…" currentSearch={searchParam} />
+      <div className="panel overflow-hidden">
       <DataTable empty={filtered.length === 0} emptyTitle="No orders" emptySubtitle="Orders will appear here.">
         <table className="w-full border-collapse">
           <thead style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--line)' }}>
@@ -94,6 +106,7 @@ export default async function VendorOrdersPage({
           </tbody>
         </table>
       </DataTable>
+      </div>
     </div>
   );
 }

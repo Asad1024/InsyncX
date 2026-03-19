@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 interface SearchParams {
-  searchParams: Promise<{ category?: string; search?: string; sort?: string; page?: string; featured?: string }>;
+  searchParams: Promise<{ category?: string; search?: string; sort?: string; page?: string; featured?: string; new?: string }>;
 }
 
 export default async function ShopPage({ searchParams }: SearchParams) {
@@ -23,19 +23,25 @@ export default async function ShopPage({ searchParams }: SearchParams) {
   const search = params.search ?? undefined;
   const sort = (params.sort as 'newest' | 'price-asc' | 'price-desc' | 'name') ?? 'newest';
   const page = Math.max(1, parseInt(params.page ?? '1', 10));
+  const newArrivals = params.new === '1';
+  const featured = params.featured === '1';
 
   const [result, categories] = await Promise.all([
-    getProducts({ category, search, sort, page, perPage: 12 }),
+    getProducts({ category, search, sort, page, perPage: 12, newArrivals, featured }),
     getCategories(),
   ]);
+
+  // Flat list: root + all child categories so "Exotic" (child of Men) appears in shop filter
+  const flatCategories = categories.flatMap((c) => [c, ...c.children]);
 
   const queryWithoutPage: Record<string, string> = {};
   if (category) queryWithoutPage.category = category;
   if (search) queryWithoutPage.search = search;
   if (sort && sort !== 'newest') queryWithoutPage.sort = sort;
   if (params.featured) queryWithoutPage.featured = params.featured;
+  if (newArrivals) queryWithoutPage.new = '1';
 
-  const currentCategoryName = category ? categories.find((c) => c.slug === category)?.name : null;
+  const currentCategoryName = newArrivals ? 'New Arrivals' : featured ? 'Featured' : (category ? flatCategories.find((c) => c.slug === category)?.name : null);
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -58,9 +64,9 @@ export default async function ShopPage({ searchParams }: SearchParams) {
             >
               {currentCategoryName}
               <Link
-                href="/shop"
+                href={newArrivals ? '/shop' : '/shop'}
                 className="font-sans text-[12px] text-[var(--text-3)] hover:text-[var(--red)] transition-colors"
-                aria-label="Clear category"
+                aria-label="Clear filter"
               >
                 ×
               </Link>
@@ -73,11 +79,13 @@ export default async function ShopPage({ searchParams }: SearchParams) {
       </div>
 
       <ShopFilters
-        categories={categories}
+        categories={flatCategories}
         currentCategory={category}
         currentSort={sort}
         search={search}
         totalCount={result.total}
+        newArrivals={newArrivals}
+        featured={featured}
       />
 
       <div className="px-12 pt-8">

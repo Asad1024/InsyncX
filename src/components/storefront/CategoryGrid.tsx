@@ -24,13 +24,14 @@ function getGradient(slug: string): string {
 }
 
 interface CategoryGridProps {
+  /** Flat list: root + child categories so e.g. Exotic (child of Men) appears */
   categories: (Category & { children?: Category[] })[];
 }
 
 export function CategoryGrid({ categories }: CategoryGridProps) {
-  const list = [...categories]
-    .filter((c) => c.parentId == null)
-    .sort((a, b) => a.slug.localeCompare(b.slug))
+  const flatList = categories.flatMap((c) => [c, ...(c.children ?? [])]);
+  const list = [...flatList]
+    .sort((a, b) => a.name.localeCompare(b.name))
     .slice(0, 5);
   const [first, ...rest] = list;
 
@@ -94,7 +95,7 @@ export function CategoryGrid({ categories }: CategoryGridProps) {
         {rest.map((cat) => (
           <Link
             key={cat.id}
-            href={`/shop?category=${cat.slug}`}
+            href={`/shop?category=${encodeURIComponent(cat.slug)}`}
             className="relative overflow-hidden rounded-[14px] cursor-pointer border transition-all duration-300 hover:border-[var(--line-gold)] hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] group"
             style={{ borderColor: 'var(--line)' }}
           >

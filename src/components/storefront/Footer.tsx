@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { NewsletterForm } from './NewsletterForm';
 
 const SHOP_LINKS = [
-  { label: "Men", href: '/shop?category=men' },
-  { label: "Women", href: '/shop?category=women' },
+  { label: 'New Arrivals', href: '/shop?new=1' },
+  { label: 'Women', href: '/shop?category=women' },
+  { label: 'Men', href: '/shop?category=men' },
+  { label: 'Accessories', href: '/shop?category=accessories' },
   { label: 'LGBTQ+', href: '/shop?category=lgbtq' },
   { label: 'Wellness', href: '/shop?category=wellness' },
   { label: 'Party', href: '/shop?category=party' },

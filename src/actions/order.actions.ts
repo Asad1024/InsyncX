@@ -94,7 +94,7 @@ export async function getOrderById(orderId: string) {
     include: {
       orderItems: { include: { product: true } },
       store: true,
-      user: { select: { name: true, email: true } },
+      user: { select: { name: true, email: true, phone: true } },
     },
   });
   if (!order) return null;
@@ -107,7 +107,10 @@ export async function getOrderById(orderId: string) {
 export async function getOrdersForUser(userId: string) {
   return prisma.order.findMany({
     where: { userId },
-    include: { store: true },
+    include: {
+      store: true,
+      orderItems: { include: { product: { select: { title: true, images: true } } } },
+    },
     orderBy: { createdAt: 'desc' },
   });
 }

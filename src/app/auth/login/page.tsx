@@ -57,10 +57,10 @@ export default function LoginPage() {
   return (
     <>
       <div className="mb-6">
-        <h1 className="font-display text-[32px] sm:text-[36px] font-light" style={{ color: 'var(--text)' }}>
+        <h1 className="font-display text-[30px] sm:text-[32px] font-bold" style={{ color: 'var(--text)' }}>
           Sign in
         </h1>
-        <p className="font-sans text-[14px] mt-2" style={{ color: 'var(--text-3)' }}>
+        <p className="text-[14px] mt-2 font-normal" style={{ color: 'var(--text-3)', fontWeight: 400 }}>
           Enter your email and password to continue
         </p>
       </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
             }}
           >
             <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--red)' }} />
-            <span className="font-sans text-[13px]" style={{ color: 'var(--red)' }}>
+            <span className="text-[13px]" style={{ color: 'var(--red)' }}>
               {error}
             </span>
           </div>
@@ -127,7 +127,7 @@ export default function LoginPage() {
           <div className="flex justify-end mt-2">
             <Link
               href="/auth/forgot-password"
-              className="font-sans text-[12px] transition-colors hover:underline"
+              className="text-[12px] transition-colors hover:underline"
               style={{ color: 'var(--gold)' }}
             >
               Forgot password?
@@ -137,7 +137,7 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="auth-submit-btn w-full py-4 rounded-xl font-sans text-[14px] font-semibold border-0 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="auth-submit-btn w-full py-4 text-[14px] border-0 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? (
@@ -153,7 +153,7 @@ export default function LoginPage() {
 
       <div className="flex items-center gap-4 my-8">
         <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
-        <span className="font-sans text-[12px]" style={{ color: 'var(--text-4)' }}>
+        <span className="text-[12px]" style={{ color: 'var(--text-4)' }}>
           or
         </span>
         <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
@@ -161,7 +161,7 @@ export default function LoginPage() {
 
       <GoogleSignInButton callbackUrl={callbackUrl} />
 
-      <p className="text-center font-sans text-[13px] mt-8" style={{ color: 'var(--text-3)' }}>
+      <p className="text-center text-[13px] mt-8" style={{ color: 'var(--text-3)' }}>
         Don&apos;t have an account?{' '}
         <Link
           href="/auth/register"

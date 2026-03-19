@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Breadcrumb } from '@/components/storefront/Breadcrumb';
 import { OrderStatusStepper } from '@/components/account/OrderStatusStepper';
 import { UpdateOrderStatus } from '@/components/vendor/UpdateOrderStatus';
-import { Calendar, User, MapPin, CreditCard } from 'lucide-react';
+import { Calendar, User, MapPin, CreditCard, Phone } from 'lucide-react';
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -51,9 +51,13 @@ export default async function AdminOrderDetailPage({ params }: Props) {
       </div>
 
       {order.status !== 'CANCELLED' && (
-        <div className="flex flex-wrap items-center gap-4 mb-8 p-4 rounded-[14px] border" style={{ background: 'var(--surface2)', borderColor: 'var(--line)' }}>
-          <OrderStatusStepper currentStatus={order.status} />
-          <UpdateOrderStatus orderId={order.id} currentStatus={order.status} actor="admin" />
+        <div className="mb-8 space-y-4">
+          <div className="w-full">
+            <OrderStatusStepper currentStatus={order.status} />
+          </div>
+          <div className="flex justify-end">
+            <UpdateOrderStatus orderId={order.id} currentStatus={order.status} actor="admin" />
+          </div>
         </div>
       )}
 
@@ -125,8 +129,15 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                 <div>
                   <p className="font-medium" style={{ color: 'var(--text)' }}>{order.user?.name ?? '—'}</p>
                   {order.user?.email && <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>{order.user.email}</p>}
+                  {order.user?.phone && <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>{order.user.phone}</p>}
                 </div>
               </li>
+              {address?.phone && (
+                <li className="flex items-start gap-3">
+                  <Phone className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--text-4)' }} />
+                  <span>{String(address.phone)}</span>
+                </li>
+              )}
               {address && (
                 <li className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--text-4)' }} />

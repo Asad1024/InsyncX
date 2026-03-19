@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { CheckCircle, Store, Shield, Heart, LayoutDashboard, Package, Tag } from 'lucide-react';
+import { CheckCircle, Store, Shield, Heart, LayoutDashboard, Package, Tag, Star } from 'lucide-react';
 
 // Same hero images — change every 3s
 const AUTH_BG_IMAGES = [
@@ -57,10 +57,9 @@ export function AuthLeftPanel() {
 
   return (
     <div
-      className="hidden lg:flex flex-col justify-between pt-8 pb-12 px-14 relative overflow-hidden"
+      className="auth-left-panel hidden lg:flex flex-col justify-between pt-8 pb-12 px-14 relative overflow-hidden"
       style={{
         background: 'linear-gradient(165deg, var(--surface) 0%, var(--surface2) 50%, #0f0f12 100%)',
-        borderRight: '1px solid var(--line)',
       }}
     >
       {/* Background images — same as hero, change every 3s */}
@@ -97,29 +96,29 @@ export function AuthLeftPanel() {
         }}
         aria-hidden
       />
-      {/* Logo at top center — less space below on register */}
-      <div className={`relative z-10 w-full flex justify-center ${isLogin ? 'mb-6' : 'mb-2'}`}>
-        <div className="relative shrink-0" style={{ width: 300, height: 76 }}>
+      {/* Logo anchored top-left so both panels show the brand */}
+      <div className={`relative z-10 w-full flex justify-start ${isLogin ? 'mb-6' : 'mb-2'}`}>
+        <div className="relative shrink-0" style={{ width: 220, height: 56 }}>
           <Image
             src="/InsyncX%20logo.avif"
             alt="InsyncX"
             fill
-            className="object-contain object-center"
-            sizes="300px"
+            className="object-contain object-left"
+            sizes="220px"
             priority
           />
         </div>
       </div>
-      <div className={`relative z-10 flex-1 flex flex-col justify-center min-h-0 ${isLogin ? '-mt-2' : '-mt-1'}`}>
+      <div className={`relative z-10 flex-1 flex flex-col justify-center min-h-0 ${isLogin ? '-mt-2' : ''}`}>
         <h1
           className="font-display text-[42px] lg:text-[48px] font-light leading-[1.15] tracking-tight text-white opacity-0 auth-fade-in-up"
-          style={{ animationDelay: '0.15s', animationFillMode: 'forwards' }}
+          style={{ animationDelay: '0.15s', animationFillMode: 'forwards', fontWeight: 700 }}
         >
           {content.headline.includes('InsyncX') ? (
             <>
               {content.headline.split('InsyncX')[0]}
               <span className="font-semibold">Insync</span>
-              <span style={{ color: 'var(--gold)' }}>X</span>
+              <span style={{ color: '#E8B94F' }}>X</span>
               {content.headline.split('InsyncX')[1] ?? ''}
             </>
           ) : (
@@ -134,7 +133,7 @@ export function AuthLeftPanel() {
         </p>
         <p
           className="font-sans text-[15px] mt-6 max-w-[340px] leading-relaxed text-white/80 opacity-0 auth-fade-in-up"
-          style={{ animationDelay: '0.45s', animationFillMode: 'forwards' }}
+          style={{ animationDelay: '0.45s', animationFillMode: 'forwards', fontWeight: 400 }}
         >
           {content.body}
         </p>
@@ -146,39 +145,109 @@ export function AuthLeftPanel() {
             {content.body2}
           </p>
         )}
-      </div>
 
-      <div className="relative z-10 flex flex-col gap-3 mt-6">
-        {content.features.map((item, i) => (
+        {/* Register only: stats bar */}
+        {!isLogin && (
           <div
-            key={item.title}
-            className="opacity-0 auth-card-entrance w-full max-w-[320px]"
+            className="flex flex-row opacity-0 auth-fade-in-up mt-5 max-w-[340px] rounded-xl border backdrop-blur-[12px]"
             style={{
-              animationDelay: `${0.6 + i * 0.12}s`,
+              animationDelay: '0.6s',
               animationFillMode: 'forwards',
+              background: 'rgba(255,255,255,0.03)',
+              borderColor: 'rgba(255,255,255,0.07)',
             }}
           >
-            <div
-              className="flex items-center gap-3 rounded-xl py-3.5 px-4 border border-white/15 transition-all duration-300 auth-card-funky hover:scale-[1.02]"
-              style={{ background: 'rgba(255,255,255,0.03)' }}
-            >
+            {[
+              { num: '50K+', label: 'Members' },
+              { num: '500+', label: 'Vendors' },
+              { num: '10K+', label: 'Products' },
+            ].map((stat, idx) => (
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300"
-                style={{ background: 'rgba(255,255,255,0.12)' }}
+                key={stat.label}
+                className="flex-1 flex flex-col items-center justify-center py-4 px-3.5 border-r last:border-r-0 border-white/7"
+                style={{ borderRightColor: idx < 2 ? 'rgba(255,255,255,0.07)' : 'transparent' }}
               >
-                <item.icon className="w-5 h-5 text-[var(--gold)]" />
+                <span className="font-display font-bold text-[20px]" style={{ color: '#E8B94F' }}>{stat.num}</span>
+                <span className="font-sans text-[10.5px] mt-0.5 text-white/60" style={{ fontWeight: 300 }}>{stat.label}</span>
               </div>
-              <div>
-                <p className="font-sans text-[13px] font-medium text-white">
-                  {item.title}
-                </p>
-                <p className="font-sans text-[12px] mt-0.5 text-white/70">
-                  {item.subtitle}
-                </p>
+            ))}
+          </div>
+        )}
+
+        {/* Register only: testimonial card */}
+        {!isLogin && (
+          <div
+            className="opacity-0 auth-fade-in-up mt-4 max-w-[340px] rounded-[11px] border p-4 backdrop-blur-md relative"
+            style={{
+              animationDelay: '0.7s',
+              animationFillMode: 'forwards',
+              background: 'rgba(255,255,255,0.035)',
+              borderColor: 'rgba(255,255,255,0.07)',
+            }}
+          >
+            <span className="font-display block text-[40px] leading-none -mt-1 -ml-0.5" style={{ color: 'rgba(232,185,79,0.2)' }}>&ldquo;</span>
+            <p className="font-sans text-[13px] italic leading-relaxed text-white/70 -mt-4" style={{ fontWeight: 300, lineHeight: 1.6 }}>
+              Opened my store in under 10 minutes. First sale came the same week.
+            </p>
+            <div className="flex items-center gap-3 mt-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-display text-[11px] font-bold" style={{ background: 'var(--surface3)', color: '#E8B94F' }}>AR</div>
+              <div className="flex-1 min-w-0">
+                <p className="font-sans text-[12px] font-medium text-white truncate">Aisha R.</p>
+                <p className="font-sans text-[11px] text-white/60">Verified vendor · Lagos</p>
+              </div>
+              <div className="flex gap-0.5 shrink-0">
+                {[1,2,3,4,5].map((i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-[#E8B94F]" style={{ color: '#E8B94F' }} />
+                ))}
               </div>
             </div>
           </div>
-        ))}
+        )}
+
+        {/* Feature cards: login = 3 stacked, register = 2×2 grid */}
+        <div
+          className={`relative z-10 mt-6 ${isLogin ? 'flex flex-col gap-3 max-w-[320px]' : 'grid grid-cols-2 gap-2 max-w-[340px]'}`}
+        >
+          {content.features.map((item, i) => (
+            <div
+              key={item.title}
+              className="opacity-0 auth-card-entrance w-full"
+              style={{
+                animationDelay: `${isLogin ? 0.6 + i * 0.12 : 0.8 + i * 0.08}s`,
+                animationFillMode: 'forwards',
+              }}
+            >
+              <div
+                className="auth-feature-card flex items-center gap-3 rounded-[11px] border transition-all duration-300 auth-card-funky hover:scale-[1.02] backdrop-blur-md"
+                style={{
+                  background: 'rgba(255,255,255,0.035)',
+                  borderColor: 'rgba(255,255,255,0.07)',
+                  padding: isLogin ? '14px 16px' : '12px 10px',
+                }}
+              >
+                <div
+                  className="shrink-0 flex items-center justify-center rounded-lg transition-transform duration-300"
+                  style={{
+                    width: isLogin ? 34 : 30,
+                    height: isLogin ? 34 : 30,
+                    background: 'rgba(232,185,79,0.10)',
+                    border: '1px solid rgba(232,185,79,0.15)',
+                  }}
+                >
+                  <item.icon className="w-[18px] h-[18px]" style={{ color: '#E8B94F' }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-sans font-medium text-white" style={{ fontSize: isLogin ? 13 : 12 }}>
+                    {item.title}
+                  </p>
+                  <p className="font-sans text-white/70 mt-0.5" style={{ fontSize: isLogin ? 12 : 11 }}>
+                    {item.subtitle}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <p

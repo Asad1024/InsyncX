@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as {
       id: string;
-      metadata?: { userId?: string; storeId?: string; orderItems?: string };
+      metadata?: { userId?: string; storeId?: string; orderItems?: string; shippingAddress?: string; couponCode?: string };
       amount_total?: number;
     };
     const userId = session.metadata?.userId;
@@ -33,8 +33,18 @@ export async function POST(req: Request) {
     } catch {
       return new Response('OK', { status: 200 });
     }
+    let shippingAddress: object = {};
+    try {
+      if (session.metadata?.shippingAddress) {
+        shippingAddress = JSON.parse(session.metadata.shippingAddress) as object;
+      }
+    } catch {
+      // ignore
+    }
     const subtotal = orderItems.reduce((s, i) => s + i.price * i.quantity, 0);
     const total = (session.amount_total ?? Math.round(subtotal * 100)) / 100;
+    const discount = Math.max(0, subtotal - total);
+    const couponCode = session.metadata?.couponCode ?? null;
     await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
@@ -42,9 +52,10 @@ export async function POST(req: Request) {
           storeId,
           status: 'CONFIRMED',
           subtotal,
-          discount: 0,
+          discount,
           total,
-          shippingAddress: {},
+          couponCode,
+          shippingAddress,
           stripeSessionId: session.id,
         },
       });
@@ -60,6 +71,12 @@ export async function POST(req: Request) {
         await tx.product.update({
           where: { id: oi.productId },
           data: { stock: { decrement: oi.quantity } },
+        });
+      }
+      if (couponCode) {
+        await tx.coupon.updateMany({
+          where: { code: couponCode },
+          data: { usedCount: { increment: 1 } },
         });
       }
     });

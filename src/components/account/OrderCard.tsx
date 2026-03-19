@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getFirstProductImage } from '@/lib/utils';
 import { StatusBadge } from '@/components/ui/status-badge';
 import type { OrderStatus } from '@prisma/client';
 
@@ -25,10 +25,7 @@ export function OrderCard({ order }: OrderCardProps) {
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
   const thumbs = items.slice(0, 3);
   const extra = items.length > 3 ? items.length - 3 : 0;
-  const images = thumbs.map((oi) => {
-    const imgs = Array.isArray(oi.product?.images) ? oi.product.images as string[] : [];
-    return imgs[0] ?? null;
-  });
+  const images = thumbs.map((oi) => getFirstProductImage(oi.product?.images));
 
   return (
     <div className="card overflow-hidden">

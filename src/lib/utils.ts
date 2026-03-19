@@ -18,13 +18,11 @@ export function uniqueSlug(base: string, suffix?: string): string {
   return suffix ? `${slug}-${suffix}` : `${slug}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function formatPrice(amount: number | string): string {
+/** Format price. Pass currencySymbol from platform settings when available (e.g. $, €, ₹). */
+export function formatPrice(amount: number | string, currencySymbol?: string): string {
   const n = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(n);
+  const symbol = currencySymbol ?? '$';
+  return `${symbol} ${Number(n).toFixed(2)}`;
 }
 
 /** Get first product image URL from Prisma JSON (array, string, or object with numeric keys). */

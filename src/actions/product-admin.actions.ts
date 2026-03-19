@@ -23,6 +23,7 @@ export async function createProduct(params: {
   storeId: string;
   tags: string[];
   isFeatured?: boolean;
+  isNewArrival?: boolean;
   isActive: boolean;
 }) {
   const session = await auth();
@@ -47,6 +48,7 @@ export async function createProduct(params: {
       storeId: params.storeId,
       tags: params.tags as unknown as object,
       isFeatured: params.isFeatured ?? false,
+      isNewArrival: params.isNewArrival ?? false,
       isActive: params.isActive,
     },
   });
@@ -69,6 +71,7 @@ export async function updateProduct(
     storeId?: string;
     tags?: string[];
     isFeatured?: boolean;
+    isNewArrival?: boolean;
     isActive?: boolean;
   }
 ) {
@@ -93,6 +96,7 @@ export async function updateProduct(
       storeId: params.storeId,
       tags: params.tags as unknown as object,
       isFeatured: params.isFeatured,
+      isNewArrival: params.isNewArrival,
       isActive: params.isActive,
     },
   });

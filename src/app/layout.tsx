@@ -14,6 +14,12 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: 'InsyncX — Multi-Vendor E-Commerce',
   description: 'Luxury multi-vendor marketplace. Shop from curated stores and official picks.',
+  icons: {
+    icon: [
+      { url: '/InsyncX%20logo.avif', type: 'image/avif' },
+      { url: '/logo.svg', type: 'image/svg+xml' },
+    ],
+  },
   openGraph: {
     title: 'InsyncX — Multi-Vendor E-Commerce',
     description: 'Luxury multi-vendor marketplace.',

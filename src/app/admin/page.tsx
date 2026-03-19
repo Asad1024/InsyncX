@@ -15,7 +15,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { DollarSign, TrendingUp, ShoppingBag, Users, Store, AlertCircle, Package, ArrowRight } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
-  const commission = getCommissionPercent();
+  const commission = await getCommissionPercent();
   const [
     ordersCount,
     usersCount,
@@ -67,7 +67,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Platform Overview" subtitle="InsyncX Admin Dashboard" />
+      <PageHeader title="Platform overview" subtitle="InsyncX admin dashboard" />
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
         <StatsCard label="Platform Revenue" value={formatPrice(totalRevenue)} icon={DollarSign} color="gold" />
         <StatsCard label="Commission Earned" value={formatPrice(platformCommission)} icon={TrendingUp} color="green" />
@@ -77,8 +77,9 @@ export default async function AdminDashboardPage() {
         <StatsCard label="Active Products" value={String(productsCount)} icon={Package} color="blue" />
       </div>
       {ordersByStatus.length > 0 && (
-        <div className="mb-6 p-4 rounded-[14px] border" style={{ background: 'var(--surface2)', borderColor: 'var(--line)' }}>
-          <h3 className="font-sans text-[12px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-4)' }}>Orders by status</h3>
+        <div className="panel mb-8 p-6">
+          <h3 className="font-display text-[18px] font-normal mb-1" style={{ color: 'var(--text)' }}>Orders by status</h3>
+          <p className="font-sans text-[13px] mb-4" style={{ color: 'var(--text-3)' }}>Current order counts per status</p>
           <div className="flex flex-wrap gap-4">
             {ordersByStatus.map(({ status, _count }) => (
               <span key={status} className="font-sans text-[14px]" style={{ color: 'var(--text-2)' }}>
@@ -92,7 +93,7 @@ export default async function AdminDashboardPage() {
       {pendingStoresCount > 0 && (
         <Link
           href="/admin/vendors?filter=pending"
-          className="flex items-center gap-3 mb-6 rounded-[14px] py-4 px-5 no-underline transition-opacity hover:opacity-90"
+          className="panel flex items-center gap-3 mb-8 py-4 px-6 no-underline transition-opacity hover:opacity-90"
           style={{
             background: 'var(--amber-bg)',
             border: '1px solid rgba(245,158,11,0.2)',
@@ -105,9 +106,12 @@ export default async function AdminDashboardPage() {
           <span className="inline-flex items-center gap-1.5 font-sans text-[13px] ml-auto" style={{ color: 'var(--gold)' }}>Review Now <ArrowRight className="w-4 h-4" /></span>
         </Link>
       )}
-      <div className="grid gap-6 mb-6" style={{ gridTemplateColumns: '60% 1fr' }}>
-        <RevenueChart title="Platform Revenue" data={chartData} />
-        <DataTable header={{ title: 'Recent Orders' }} empty={recentOrders.length === 0} emptyTitle="No orders">
+      <div className="grid gap-8 mb-8 lg:grid-cols-[1fr_400px]">
+        <div className="panel p-6">
+          <RevenueChart title="Platform revenue" data={chartData} />
+        </div>
+        <div className="panel overflow-hidden">
+        <DataTable header={{ title: 'Recent orders' }} empty={recentOrders.length === 0} emptyTitle="No orders">
           <table className="w-full border-collapse">
             <thead style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--line)' }}>
               <tr>
@@ -138,6 +142,7 @@ export default async function AdminDashboardPage() {
             </tbody>
           </table>
         </DataTable>
+        </div>
       </div>
     </div>
   );

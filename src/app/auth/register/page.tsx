@@ -37,10 +37,10 @@ const strengthLabel: Record<number, string> = {
 
 const strengthColor: Record<number, string> = {
   0: 'var(--surface3)',
-  1: 'var(--red)',
-  2: 'var(--amber)',
-  3: 'var(--gold)',
-  4: 'var(--green)',
+  1: '#e85555',
+  2: '#E8B94F',
+  3: '#4caf7d',
+  4: '#4caf7d',
 };
 
 export default function RegisterPage() {
@@ -50,8 +50,10 @@ export default function RegisterPage() {
   const completeMode = searchParams.get('complete') === '1';
   const fromGoogle = searchParams.get('from') === 'google';
 
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -67,7 +69,15 @@ export default function RegisterPage() {
     const emailParam = searchParams.get('email');
     const nameParam = searchParams.get('name');
     if (emailParam) setEmail(decodeURIComponent(emailParam));
-    if (nameParam) setName(decodeURIComponent(nameParam));
+    if (nameParam) {
+      const parts = decodeURIComponent(nameParam).trim().split(/\s+/);
+      if (parts.length >= 2) {
+        setFirstName(parts[0]);
+        setLastName(parts.slice(1).join(' '));
+      } else if (parts.length === 1) {
+        setFirstName(parts[0]);
+      }
+    }
   }, [searchParams]);
 
   const strength = useMemo(() => passwordStrength(password), [password]);
@@ -122,10 +132,11 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await registerUser({
-        name,
+        name: `${firstName} ${lastName}`.trim(),
         email,
         password,
         role,
+        phone: phone.trim() || undefined,
         storeName: role === 'VENDOR' ? storeName : undefined,
         storeSlug: role === 'VENDOR' ? storeSlug : undefined,
       });
@@ -150,18 +161,18 @@ export default function RegisterPage() {
           <h1 className="font-display text-[32px] sm:text-[36px] font-light" style={{ color: 'var(--text)' }}>
             Set your password
           </h1>
-          <p className="font-sans text-[14px] mt-2" style={{ color: 'var(--text-3)' }}>
+          <p className="text-[14px] mt-2" style={{ color: 'var(--text-3)' }}>
             You signed in with Google. Choose a password to complete your account.
           </p>
         </div>
         <form onSubmit={handleSetPassword} className="space-y-4">
           <div className="input-group">
             <label className="input-label">Name</label>
-            <p className="font-sans text-[14px] py-2" style={{ color: 'var(--text-2)' }}>{session.user.name ?? '—'}</p>
+            <p className="text-[14px] py-2" style={{ color: 'var(--text-2)' }}>{session.user.name ?? '—'}</p>
           </div>
           <div className="input-group">
             <label className="input-label">Email</label>
-            <p className="font-sans text-[14px] py-2" style={{ color: 'var(--text-2)' }}>{session.user.email ?? '—'}</p>
+            <p className="text-[14px] py-2" style={{ color: 'var(--text-2)' }}>{session.user.email ?? '—'}</p>
           </div>
           <div className="input-group">
             <label htmlFor="complete-password" className="input-label">Password</label>
@@ -213,12 +224,12 @@ export default function RegisterPage() {
           {error && (
             <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 border" style={{ background: 'var(--red-bg)', borderColor: 'rgba(239,68,68,0.25)' }}>
               <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--red)' }} />
-              <span className="font-sans text-[13px]" style={{ color: 'var(--red)' }}>{error}</span>
+              <span className="text-[13px]" style={{ color: 'var(--red)' }}>{error}</span>
             </div>
           )}
           <button
             type="submit"
-            className="auth-submit-btn w-full py-4 rounded-xl font-sans text-[14px] font-semibold border-0 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70"
+            className="auth-submit-btn w-full py-4 rounded-xl text-[14px] font-semibold border-0 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70"
             disabled={loading}
           >
             {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Setting password…</> : 'Set password'}
@@ -230,24 +241,21 @@ export default function RegisterPage() {
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="font-display text-[32px] sm:text-[36px] font-light" style={{ color: 'var(--text)' }}>
+      <div className="mb-5">
+        <h1 className="font-display text-[26px] sm:text-[28px] font-bold" style={{ color: 'var(--text)' }}>
           Create account
         </h1>
-        <p className="font-sans text-[14px] mt-2" style={{ color: 'var(--text-3)' }}>
-          Join <span className="font-semibold">Insync</span><span style={{ color: 'var(--gold)' }}>X</span> and start shopping or selling
+        <p className="text-[14px] mt-2 font-normal" style={{ color: 'var(--text-3)' }}>
+          Join <span className="font-semibold">Insync</span><span style={{ color: '#E8B94F' }}>X</span> and start shopping or selling
         </p>
         {fromGoogle && (
-          <p className="font-sans text-[12px] mt-2" style={{ color: 'var(--gold)' }}>
+          <p className="text-[12px] mt-2" style={{ color: '#E8B94F' }}>
             Complete sign-up with a password below.
           </p>
         )}
-        <p className="font-sans text-[12px] mt-3 leading-relaxed" style={{ color: 'var(--text-4)' }}>
-          Choose whether you want to shop as a customer or open your own store. You can always switch or add a store later from your account.
-        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-0">
         <div className="input-group" style={{ marginBottom: 16 }}>
           <label className="input-label mb-2">I want to</label>
           <div className="grid grid-cols-2 gap-3">
@@ -270,8 +278,8 @@ export default function RegisterPage() {
               >
                 <ShoppingBag className="w-4 h-4" style={{ color: role === 'CUSTOMER' ? 'var(--gold)' : 'var(--text-3)' }} />
               </div>
-              <div className="font-sans text-[13px] font-semibold" style={{ color: 'var(--text)' }}>Shop</div>
-              <div className="font-sans text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>Browse & buy</div>
+              <div className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>Shop</div>
+              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>Browse & buy</div>
             </button>
             <button
               type="button"
@@ -292,23 +300,37 @@ export default function RegisterPage() {
               >
                 <Store className="w-4 h-4" style={{ color: role === 'VENDOR' ? 'var(--gold)' : 'var(--text-3)' }} />
               </div>
-              <div className="font-sans text-[13px] font-semibold" style={{ color: 'var(--text)' }}>Sell</div>
-              <div className="font-sans text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>Open your store</div>
+              <div className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>Sell</div>
+              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>Open your store</div>
             </button>
           </div>
         </div>
 
-        <div className="input-group">
-          <label htmlFor="name" className="input-label">Name</label>
-          <input
-            id="name"
-            type="text"
-            className="input auth-input"
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+        <div className="input-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <label htmlFor="firstName" className="input-label">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              className="input auth-input"
+              placeholder="First name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="lastName" className="input-label">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              className="input auth-input"
+              placeholder="Last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
         </div>
         <div className="input-group">
           <label htmlFor="email" className="input-label">Email</label>
@@ -320,6 +342,17 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="phone" className="input-label">Phone number</label>
+          <input
+            id="phone"
+            type="tel"
+            className="input auth-input"
+            placeholder="+1 234 567 8900"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
           />
         </div>
         <div className="input-group">
@@ -349,12 +382,16 @@ export default function RegisterPage() {
             {[0, 1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex-1 h-1 rounded-full transition-colors duration-200"
-                style={{ background: i < strength ? strengthColor[strength] : 'var(--surface3)' }}
+                className="flex-1 transition-colors duration-200"
+                style={{
+                  height: 3,
+                  borderRadius: 2,
+                  background: i < strength ? strengthColor[strength] : 'var(--surface3)',
+                }}
               />
             ))}
           </div>
-          <p className="font-sans text-[11px] mt-1" style={{ color: strengthColor[strength] }}>
+          <p className="text-[11px] mt-1" style={{ color: strengthColor[strength] }}>
             {strengthLabel[strength]}
           </p>
         </div>
@@ -384,10 +421,10 @@ export default function RegisterPage() {
 
         {role === 'VENDOR' && (
           <div className="space-y-3 pt-3 border-t" style={{ borderColor: 'var(--line)' }}>
-            <p className="font-sans text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
+            <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
               Store details
             </p>
-            <p className="font-sans text-[12px] -mt-1" style={{ color: 'var(--text-4)' }}>
+            <p className="text-[12px] -mt-1" style={{ color: 'var(--text-4)' }}>
               Your store will be reviewed and go live after approval. You can add products once it’s approved.
             </p>
             <div className="input-group">
@@ -413,7 +450,7 @@ export default function RegisterPage() {
                 onChange={(e) => setStoreSlug(e.target.value)}
                 required={role === 'VENDOR'}
               />
-              <p className="font-sans text-[11px] mt-1.5" style={{ color: 'var(--text-4)' }}>
+              <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-4)' }}>
                 insyncx.store/store/{storeSlug || 'your-slug'}
               </p>
             </div>
@@ -426,25 +463,19 @@ export default function RegisterPage() {
             style={{ background: 'var(--red-bg)', borderColor: 'rgba(239,68,68,0.25)' }}
           >
             <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--red)' }} />
-            <span className="font-sans text-[13px]" style={{ color: 'var(--red)' }}>{error}</span>
+            <span className="text-[13px]" style={{ color: 'var(--red)' }}>{error}</span>
           </div>
         )}
 
-        <div className="flex items-start gap-3 mt-1">
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={agreeTerms}
-            onClick={() => setAgreeTerms((v) => !v)}
-            className="mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center cursor-pointer transition-colors shrink-0"
-            style={{
-              borderColor: agreeTerms ? 'var(--gold)' : 'var(--line-md)',
-              background: agreeTerms ? 'var(--gold)' : 'transparent',
-            }}
-          >
-            {agreeTerms && <Check className="w-3 h-3" style={{ color: '#0a0a0a' }} strokeWidth={3} />}
-          </button>
-          <label className="font-sans text-[13px] cursor-pointer leading-snug" style={{ color: 'var(--text-3)' }}>
+        <div className="flex items-start gap-3 mt-5 mb-5 pt-4 pb-4">
+          <input
+            type="checkbox"
+            id="agreeTerms"
+            checked={agreeTerms}
+            onChange={(e) => setAgreeTerms(e.target.checked)}
+            className="mt-0.5 w-5 h-5 rounded cursor-pointer shrink-0"
+          />
+          <label htmlFor="agreeTerms" className="text-[13px] cursor-pointer leading-snug" style={{ color: 'var(--text-3)' }}>
             I agree to the{' '}
             <Link href="/terms" className="hover:underline" style={{ color: 'var(--gold)' }}>Terms of Service</Link>
             {' '}and{' '}
@@ -454,7 +485,7 @@ export default function RegisterPage() {
 
         <button
           type="submit"
-          className="auth-submit-btn w-full py-4 rounded-xl font-sans text-[14px] font-semibold border-0 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="auth-submit-btn w-full py-4 text-[14px] border-0 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? (
@@ -470,12 +501,12 @@ export default function RegisterPage() {
 
       <div className="flex items-center gap-4 my-8">
         <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
-        <span className="font-sans text-[12px]" style={{ color: 'var(--text-4)' }}>or</span>
+        <span className="text-[12px]" style={{ color: 'var(--text-4)' }}>or</span>
         <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
       </div>
       <GoogleSignInButton callbackUrl="/auth/register" />
 
-      <p className="text-center font-sans text-[13px] mt-8" style={{ color: 'var(--text-3)' }}>
+      <p className="text-center text-[13px] mt-8" style={{ color: 'var(--text-3)' }}>
         Already have an account?{' '}
         <Link href="/auth/login" className="font-medium hover:underline" style={{ color: 'var(--gold)' }}>
           Sign in

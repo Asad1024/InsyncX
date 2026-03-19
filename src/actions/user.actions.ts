@@ -1,5 +1,6 @@
 'use server';
 
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
@@ -11,6 +12,7 @@ export async function registerUser(params: {
   email: string;
   password: string;
   role: 'CUSTOMER' | 'VENDOR';
+  phone?: string;
   storeName?: string;
   storeSlug?: string;
 }) {
@@ -21,6 +23,7 @@ export async function registerUser(params: {
 
   const salt = await bcrypt.genSalt(12);
   const hashedPassword = await bcrypt.hash(params.password, salt);
+  const phone = params.phone?.trim() || null;
 
   if (params.role === 'VENDOR' && (params.storeName ?? params.storeSlug)) {
     const slug = params.storeSlug?.trim() || slugify(params.storeName!);
@@ -32,6 +35,7 @@ export async function registerUser(params: {
         password: hashedPassword,
         role: 'VENDOR',
         authProvider: 'credentials',
+        phone,
       },
     });
     await prisma.store.create({
@@ -54,6 +58,7 @@ export async function registerUser(params: {
       password: hashedPassword,
       role: 'CUSTOMER',
       authProvider: 'credentials',
+      phone,
     },
   });
   revalidatePath('/');
@@ -78,8 +83,81 @@ export async function updateProfile(userId: string, data: { name?: string; avata
 export async function getMe(userId: string) {
   return prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, role: true, avatar: true },
+    select: { id: true, name: true, email: true, role: true, avatar: true, phone: true },
   });
+}
+
+export type DefaultAddressShape = {
+  name: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone?: string;
+};
+
+/** For checkout prefill: phone + default address if saved. */
+export async function getCheckoutPrefill(): Promise<{ phone: string; defaultAddress: DefaultAddressShape | null }> {
+  const session = await auth();
+  if (!session?.user?.id) return { phone: '', defaultAddress: null };
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { phone: true, defaultAddress: true },
+  });
+  const defaultAddress = user?.defaultAddress && typeof user.defaultAddress === 'object' && user.defaultAddress !== null
+    ? (user.defaultAddress as DefaultAddressShape)
+    : null;
+  return {
+    phone: user?.phone ?? '',
+    defaultAddress,
+  };
+}
+
+/** Save default shipping address and phone for checkout prefill. */
+export async function saveDefaultAddress(
+  address: DefaultAddressShape,
+  phone?: string
+): Promise<{ error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Not signed in' };
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      defaultAddress: address as unknown as object,
+      phone: phone?.trim() || (address.phone?.trim()) || null,
+    },
+  });
+  revalidatePath('/checkout');
+  return {};
+}
+
+export async function getWishlistProductIds(): Promise<string[]> {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+  const rows = await prisma.wishlist.findMany({
+    where: { userId: session.user.id },
+    select: { productId: true },
+  });
+  return rows.map((r) => r.productId);
+}
+
+export async function addToWishlist(productId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Sign in to add to wishlist' };
+  try {
+    await prisma.wishlist.create({
+      data: { userId: session.user.id, productId },
+    });
+  } catch (e: unknown) {
+    const prismaError = e as { code?: string };
+    if (prismaError.code === 'P2002') return {}; // already in wishlist
+    throw e;
+  }
+  revalidatePath('/account/wishlist');
+  revalidatePath('/account');
+  return {};
 }
 
 export async function removeFromWishlist(userId: string, productId: string) {

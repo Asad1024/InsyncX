@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { formatPrice } from '@/lib/utils';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { DataTable } from '@/components/shared/DataTable';
+import { ListSearchFilter } from '@/components/shared/ListSearchFilter';
 import { Plus, Pencil, Star } from 'lucide-react';
 
 function getFirstImage(images: unknown): string | null {
@@ -11,27 +12,64 @@ function getFirstImage(images: unknown): string | null {
   return null;
 }
 
-export default async function AdminProductsPage() {
-  const products = await prisma.product.findMany({
-    include: {
-      store: { select: { name: true, slug: true, isOfficial: true } },
-      category: { select: { name: true, slug: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; category?: string }>;
+}) {
+  const { search = '', category } = await searchParams;
+  const [productsRaw, categories] = await Promise.all([
+    prisma.product.findMany({
+      include: {
+        store: { select: { name: true, slug: true, isOfficial: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.category.findMany({ orderBy: { name: 'asc' }, select: { id: true, name: true } }),
+  ]);
+
+  let products = productsRaw;
+  if (category) {
+    products = products.filter((p) => p.category.id === category);
+  }
+  if (search.trim()) {
+    const q = search.trim().toLowerCase();
+    products = products.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        (p.sku?.toLowerCase().includes(q)) ||
+        p.store.name.toLowerCase().includes(q) ||
+        p.category.name.toLowerCase().includes(q)
+    );
+  }
 
   return (
     <div>
       <PageHeader
-        title="All Products"
-        subtitle={`${products.length} products across all stores`}
+        title="Products"
+        subtitle="All products across platform stores"
         actions={
-          <Link href="/admin/products/new" className="btn btn-primary">
+          <Link href="/admin/products/new" className="btn btn-primary rounded-xl px-5 py-2.5 font-sans text-[14px] font-semibold bg-[var(--gold)] text-black hover:opacity-90">
             <Plus className="w-4 h-4" />
-            Add Product
+            Add product
           </Link>
         }
       />
+      <ListSearchFilter
+        basePath="/admin/products"
+        placeholder="Search by title, SKU, store, category…"
+        currentSearch={search}
+        filters={[
+          {
+            param: 'category',
+            label: 'All categories',
+            options: categories.map((c) => ({ value: c.id, label: c.name })),
+          },
+        ]}
+        currentFilters={category ? { category } : {}}
+      />
+      <div className="panel overflow-hidden mt-8">
       <DataTable empty={products.length === 0} emptyTitle="No products">
         <table className="w-full border-collapse">
           <thead style={{ background: 'var(--surface2)', borderBottom: '1px solid var(--line)' }}>
@@ -80,6 +118,7 @@ export default async function AdminProductsPage() {
           </tbody>
         </table>
       </DataTable>
+      </div>
     </div>
   );
 }

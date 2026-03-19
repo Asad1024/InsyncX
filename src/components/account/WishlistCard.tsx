@@ -4,6 +4,7 @@ import { useTransition } from 'react';
 import { X } from 'lucide-react';
 import { ProductCard } from '@/components/storefront/ProductCard';
 import { removeFromWishlist } from '@/actions/user.actions';
+import { useWishlistStore } from '@/store/wishlist.store';
 import type { Product, Store, Category } from '@prisma/client';
 
 type ProductWithRelations = Product & {
@@ -18,12 +19,14 @@ interface WishlistCardProps {
 
 export function WishlistCard({ product, userId }: WishlistCardProps) {
   const [pending, startTransition] = useTransition();
+  const removeProductId = useWishlistStore((s) => s.removeProductId);
 
   const handleRemove = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     startTransition(() => {
       removeFromWishlist(userId, product.id);
+      removeProductId(product.id);
     });
   };
 

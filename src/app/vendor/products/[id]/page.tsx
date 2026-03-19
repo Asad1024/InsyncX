@@ -51,6 +51,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
               categoryId: product.categoryId,
               tags,
               isFeatured: product.isFeatured,
+              isNewArrival: product.isNewArrival ?? false,
               isActive: product.isActive,
             }}
           />

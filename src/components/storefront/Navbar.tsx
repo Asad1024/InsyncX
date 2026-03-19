@@ -30,10 +30,10 @@ interface NavbarProps {
 }
 
 const QUICK_LINKS = [
-  { label: 'New Arrivals', href: '/shop' },
-  { label: 'Official Picks', href: '/shop?featured=1' },
-  { label: 'Sale & Offers', href: '/shop?featured=1' },
-  { label: 'Featured', href: '/shop?featured=1' },
+  { label: 'New Arrivals', href: '/shop?new=1' },
+  { label: 'Women', href: '/shop?category=women' },
+  { label: 'Men', href: '/shop?category=men' },
+  { label: 'Accessories', href: '/shop?category=accessories' },
 ];
 
 

@@ -17,6 +17,7 @@ export async function getDbCart(userId: string) {
               slug: true,
               price: true,
               images: true,
+              store: { select: { name: true, slug: true } },
             },
           },
         },
@@ -24,16 +25,29 @@ export async function getDbCart(userId: string) {
     },
   });
   if (!cart) return [];
-  return cart.items.map((item) => ({
-    productId: item.productId,
-    quantity: item.quantity,
-    title: item.product.title,
-    slug: item.product.slug,
-    price: Number(item.product.price),
-    image: Array.isArray(item.product.images)
-      ? (item.product.images[0] as string)
-      : (JSON.parse(String(item.product.images))?.[0] as string),
-  }));
+  return cart.items.map((item) => {
+    let firstImage: string | undefined;
+    const imgs = item.product.images;
+    if (Array.isArray(imgs)) firstImage = imgs[0] as string;
+    else if (imgs != null) {
+      try {
+        const parsed = JSON.parse(String(imgs)) as unknown;
+        firstImage = Array.isArray(parsed) ? (parsed[0] as string) : undefined;
+      } catch {
+        firstImage = undefined;
+      }
+    }
+    return {
+      productId: item.productId,
+      quantity: item.quantity,
+      title: item.product.title,
+      slug: item.product.slug,
+      price: Number(item.product.price),
+      image: firstImage,
+      storeName: item.product.store?.name,
+      storeSlug: item.product.store?.slug,
+    };
+  });
 }
 
 export async function syncCartToDb(userId: string, items: { productId: string; quantity: number }[]) {
@@ -45,7 +59,10 @@ export async function syncCartToDb(userId: string, items: { productId: string; q
   await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
   if (items.length > 0) {
     const validIds = await prisma.product.findMany({
-      where: { id: { in: items.map((i) => i.productId) } },
+      where: {
+        id: { in: items.map((i) => i.productId) },
+        store: { OR: [{ isOfficial: true }, { isApproved: true }] },
+      },
       select: { id: true },
     });
     const validSet = new Set(validIds.map((p) => p.id));
@@ -57,12 +74,20 @@ export async function syncCartToDb(userId: string, items: { productId: string; q
     }
   }
   revalidatePath('/cart');
+  revalidatePath('/checkout');
   revalidatePath('/');
 }
 
 export async function addToCartDb(productId: string, quantity: number) {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Not logged in' };
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      store: { OR: [{ isOfficial: true }, { isApproved: true }] },
+    },
+  });
+  if (!product) return { error: 'Product not available' };
   let cart = await prisma.cart.findUnique({
     where: { userId: session.user.id },
     include: { items: true },
@@ -88,6 +113,7 @@ export async function addToCartDb(productId: string, quantity: number) {
     });
   }
   revalidatePath('/cart');
+  revalidatePath('/checkout');
   revalidatePath('/');
   return { success: true };
 }
@@ -108,6 +134,7 @@ export async function updateCartItemDb(productId: string, quantity: number) {
     await prisma.cartItem.update({ where: { id: item.id }, data: { quantity } });
   }
   revalidatePath('/cart');
+  revalidatePath('/checkout');
   return { success: true };
 }
 
@@ -121,5 +148,6 @@ export async function removeFromCartDb(productId: string) {
   const item = cart?.items.find((i) => i.productId === productId);
   if (item) await prisma.cartItem.delete({ where: { id: item.id } });
   revalidatePath('/cart');
+  revalidatePath('/checkout');
   return { success: true };
 }

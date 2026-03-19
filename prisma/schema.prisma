@@ -37,17 +37,19 @@ enum PayoutStatus {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  name          String
-  email         String   @unique
-  password      String
-  role          UserRole
-  avatar        String?
-  isBanned      Boolean  @default(false)
-  needsPassword Boolean  @default(false) // true when created via Google; redirect to set password
-  authProvider  String?  // 'google' | 'credentials' – how user signed up
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           UserRole
+  avatar         String?
+  phone          String?
+  defaultAddress Json?    // { name, line1, line2?, city, state, postalCode, country, phone? } for checkout prefill
+  isBanned       Boolean  @default(false)
+  needsPassword  Boolean  @default(false) // true when created via Google; redirect to set password
+  authProvider   String?  // 'google' | 'credentials' – how user signed up
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   storesOwned   Store[]       @relation("StoreOwner")
   orders        Order[]
@@ -68,6 +70,8 @@ model Store {
   isApproved      Boolean   @default(false)
   isOfficial      Boolean   @default(false)
   stripeConnectId String?
+  declinedAt      DateTime? // when admin declined; vendor can request approval again
+  declineReason   String?   @db.VarChar(500) // optional reason shown to vendor
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -104,6 +108,7 @@ model Product {
   categoryId  String
   tags        Json     // array of strings
   isFeatured  Boolean  @default(false)
+  isNewArrival Boolean @default(false) // show in New Arrivals section and /shop?new=1
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -225,10 +230,17 @@ model NewsletterSubscriber {
 }
 
 model PlatformSettings {
-  id                String   @id // use "default" for single row
-  commissionPercent Int      @default(10)
-  maintenanceMode   Boolean  @default(false)
-  homepageBanners   Json?    // array of banner configs
-  featuredStoreIds  Json?    // array of store IDs
-  updatedAt         DateTime @updatedAt
+  id                          String    @id // use "default" for single row
+  commissionPercent           Int       @default(10)
+  maintenanceMode             Boolean   @default(false)
+  homepageBanners             Json?     // array of banner configs
+  featuredStoreIds            Json?     // array of store IDs
+  homepageCouponSectionEnabled Boolean  @default(false)
+  featuredCouponIds           Json?     // array of coupon IDs to show on homepage
+  currencySymbol              String    @default("$")  // e.g. $, €, ₹
+  freeShippingThreshold       Decimal?  @db.Decimal(10, 2) // null = no free shipping threshold
+  shippingCharge              Decimal?  @db.Decimal(10, 2) // flat shipping when order below free-ship threshold; null = 0
+  taxEnabled                  Boolean   @default(false)
+  taxRatePercent              Decimal?  @db.Decimal(5, 2)  // e.g. 10 for 10%
+  updatedAt                   DateTime  @updatedAt
 }

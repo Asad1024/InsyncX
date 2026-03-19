@@ -1,15 +1,11 @@
 'use client';
 
+import { useDisplaySettings } from '@/context/display-settings';
+import { formatPrice } from '@/lib/utils';
+
 interface MarqueeProps {
   items: string[];
 }
-
-const BANNER_ITEMS = [
-  'Free shipping on orders over ₹999',
-  'INSYNCX143 — 20% off',
-  'New arrivals',
-  'Easy returns',
-];
 
 function MarqueeRow({ items, reverse }: { items: string[]; reverse?: boolean }) {
   const duplicated = [...items, ...items];
@@ -30,8 +26,16 @@ function MarqueeRow({ items, reverse }: { items: string[]; reverse?: boolean }) 
   );
 }
 
+const STATIC_BANNER_ITEMS = ['INSYNCX143 — 20% off', 'New arrivals', 'Easy returns'];
+
 export function Marquee({ items }: MarqueeProps) {
-  const combined = [...(items.length ? items : ['Collections']), ...BANNER_ITEMS];
+  const displaySettings = useDisplaySettings();
+  const freeShipItem =
+    displaySettings.freeShippingThreshold != null
+      ? `Free shipping on orders over ${formatPrice(displaySettings.freeShippingThreshold, displaySettings.currencySymbol)}`
+      : null;
+  const bannerItems = freeShipItem ? [freeShipItem, ...STATIC_BANNER_ITEMS] : STATIC_BANNER_ITEMS;
+  const combined = [...(items.length ? items : ['Collections']), ...bannerItems];
 
   return (
     <section

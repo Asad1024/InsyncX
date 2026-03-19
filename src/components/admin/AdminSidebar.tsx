@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard,
+  BarChart3,
   Package,
   FolderOpen,
   Store,
@@ -16,7 +18,10 @@ import {
   LogOut,
 } from 'lucide-react';
 
-const overviewNav = [{ href: '/admin', label: 'Dashboard', icon: LayoutDashboard }];
+const overviewNav = [
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/analytics', label: 'Advanced analytics', icon: BarChart3 },
+];
 const catalogNav = [
   { href: '/admin/products', label: 'All Products', icon: Package },
   { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
@@ -79,9 +84,9 @@ export function AdminSidebar({ pendingVendorsCount = 0 }: { pendingVendorsCount?
         borderRight: '1px solid var(--line)',
       }}
     >
-      <div className="py-5 px-4 pb-4 border-b flex items-center gap-2.5" style={{ borderColor: 'var(--line)' }}>
-        <Link href="/admin" className="font-display text-[20px] font-normal" style={{ color: 'var(--text)' }}>
-          InsyncX
+      <div className="py-5 px-4 pb-4 border-b flex items-center justify-center gap-2.5" style={{ borderColor: 'var(--line)' }}>
+        <Link href="/admin" className="flex items-center justify-center no-underline shrink-0">
+          <Image src="/InsyncX%20logo.avif" alt="" width={52} height={52} className="shrink-0 object-contain" />
         </Link>
         <span
           className="font-sans text-[9px] font-bold uppercase py-0.5 px-2 rounded-full border"

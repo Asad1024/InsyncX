@@ -3,16 +3,29 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCartStore } from '@/store/cart.store';
+import { useDisplaySettings } from '@/context/display-settings';
 import { formatPrice } from '@/lib/utils';
 import { Minus, Plus, X, ShoppingBag, Trash2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { updateCartItemDb, removeFromCartDb } from '@/actions/cart.actions';
 import { useToast } from '@/hooks/use-toast';
+import { groupCartItemsByStore } from '@/lib/cart-utils';
 
 export function CartSidebar() {
+  const displaySettings = useDisplaySettings();
   const { items, isOpen, closeCart, updateQuantity, removeItem, getSubtotal } = useCartStore();
+  const subtotal = getSubtotal();
+  const symbol = displaySettings.currencySymbol;
+  const freeShipRemaining =
+    displaySettings.freeShippingThreshold != null && subtotal < displaySettings.freeShippingThreshold
+      ? displaySettings.freeShippingThreshold - subtotal
+      : null;
   const { toast } = useToast();
   const { status } = useSession();
+
+  const storeKeys = Object.keys(groupCartItemsByStore(items));
+  const checkoutHref =
+    storeKeys.length === 1 ? `/checkout?store=${encodeURIComponent(storeKeys[0]!)}` : '/cart';
 
   const handleUpdateQty = async (productId: string, delta: number) => {
     const line = items.find((i) => i.productId === productId);
@@ -149,7 +162,7 @@ export function CartSidebar() {
                         </button>
                       </div>
                       <span className="font-sans text-[14px] font-semibold text-[var(--text)]">
-                        {formatPrice((line.price ?? 0) * line.quantity)}
+                        {formatPrice((line.price ?? 0) * line.quantity, symbol)}
                       </span>
                     </div>
                     <button
@@ -170,23 +183,28 @@ export function CartSidebar() {
         {/* Footer */}
         {items.length > 0 && (
           <div className="flex-shrink-0 py-5 px-6 pb-6 border-t bg-[var(--surface)]" style={{ borderColor: 'var(--line)' }}>
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-2">
               <span className="font-sans text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
                 Subtotal
               </span>
               <span className="font-display text-[32px] font-light text-[var(--text)]">
-                {formatPrice(getSubtotal())}
+                {formatPrice(subtotal, symbol)}
               </span>
             </div>
+            {freeShipRemaining != null && freeShipRemaining > 0 && (
+              <p className="font-sans text-[12px] text-[var(--gold)] mb-2">
+                Add {formatPrice(freeShipRemaining, symbol)} for free shipping
+              </p>
+            )}
             <p className="font-sans text-[12px] text-[var(--text-3)] italic mb-5">
               Coupons applied at checkout
             </p>
             <Link
-              href="/checkout"
+              href={checkoutHref}
               onClick={closeCart}
               className="btn btn-primary btn-full btn-lg mb-3"
             >
-              Checkout
+              {storeKeys.length > 1 ? 'View cart to checkout' : 'Checkout'}
             </Link>
             <button
               type="button"
