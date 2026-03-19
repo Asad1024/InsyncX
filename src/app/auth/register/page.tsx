@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -43,7 +43,7 @@ const strengthColor: Record<number, string> = {
   4: '#4caf7d',
 };
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -513,5 +513,19 @@ export default function RegisterPage() {
         </Link>
       </p>
     </>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[240px] flex items-center justify-center font-sans text-[14px] text-[var(--text-3)]">
+          Loading…
+        </div>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
   );
 }

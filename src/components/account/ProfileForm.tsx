@@ -35,13 +35,13 @@ export function ProfileForm({ userId, user }: { userId: string; user: { name: st
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const res = await updateProfile(userId, { name });
-    if (!res?.error) {
+    try {
+      await updateProfile(userId, { name });
       toast({ title: 'Profile updated', variant: 'success' });
       router.refresh();
       setEditing(false);
-    } else {
-      toast({ title: res.error, variant: 'error' });
+    } catch {
+      toast({ title: 'Could not update profile', variant: 'error' });
     }
     setLoading(false);
   };

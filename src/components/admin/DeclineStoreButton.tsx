@@ -17,7 +17,7 @@ export function DeclineStoreButton({ storeId }: { storeId: string }) {
     setLoading(true);
     const res = await declineVendorStore(storeId, reason || undefined);
     if (res?.error) {
-      toast({ title: res.error, variant: 'destructive' });
+      toast({ title: res.error, variant: 'error' });
     } else {
       toast({ title: 'Store declined', variant: 'default' });
       setShowForm(false);

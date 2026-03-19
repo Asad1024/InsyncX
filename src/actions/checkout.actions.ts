@@ -35,7 +35,7 @@ export async function createCheckoutSession(params: {
     include: { store: true },
   });
   if (products.length === 0) return { error: 'No valid items to checkout. Remove items from unapproved stores.' };
-  const storeIds = [...new Set(products.map((p) => p.storeId))];
+  const storeIds = Array.from(new Set(products.map((p) => p.storeId)));
   if (storeIds.length > 1) {
     return { error: 'Please checkout items from one store at a time. Split your cart or remove items from other stores.' };
   }
@@ -62,17 +62,24 @@ export async function createCheckoutSession(params: {
   if (params.couponCode?.trim()) {
     const couponRes = await applyCoupon(params.couponCode.trim(), subtotal, storeId);
     if (couponRes?.error) return { error: couponRes.error };
-    if (couponRes && (couponRes.discount != null || couponRes.fixedAmount != null)) {
-      discountAmount = computeDiscountAmount(couponRes, subtotal);
-      couponCodeToStore = couponRes.code;
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: { name: `Discount (${couponRes.code})` },
-          unit_amount: -Math.round(discountAmount * 100),
-        },
-        quantity: 1,
-      });
+    if (couponRes && 'code' in couponRes) {
+      const fixedAmt = 'fixedAmount' in couponRes ? couponRes.fixedAmount : undefined;
+      const discPct = 'discount' in couponRes ? couponRes.discount : undefined;
+      if (discPct != null || fixedAmt != null) {
+        discountAmount = computeDiscountAmount(
+          { code: couponRes.code, discount: discPct ?? undefined, fixedAmount: fixedAmt ?? undefined },
+          subtotal
+        );
+        couponCodeToStore = couponRes.code;
+        lineItems.push({
+          price_data: {
+            currency: 'usd',
+            product_data: { name: `Discount (${couponRes.code})` },
+            unit_amount: -Math.round(discountAmount * 100),
+          },
+          quantity: 1,
+        });
+      }
     }
   }
 
@@ -147,7 +154,7 @@ export async function createOrderCashOnDelivery(params: {
     include: { store: true },
   });
   if (products.length === 0) return { error: 'No valid items to checkout. Remove items from unapproved stores.' };
-  const storeIds = [...new Set(products.map((p) => p.storeId))];
+  const storeIds = Array.from(new Set(products.map((p) => p.storeId)));
   if (storeIds.length > 1) {
     return { error: 'Please checkout items from one store at a time.' };
   }
@@ -165,38 +172,56 @@ export async function createOrderCashOnDelivery(params: {
   if (params.couponCode?.trim()) {
     const couponRes = await applyCoupon(params.couponCode.trim(), subtotal, storeId);
     if (couponRes?.error) return { error: couponRes.error };
-    if (couponRes && (couponRes.discount != null || couponRes.fixedAmount != null)) {
-      discountAmount = computeDiscountAmount(couponRes, subtotal);
-      couponCodeToStore = couponRes.code;
+    if (couponRes && 'code' in couponRes) {
+      const fixedAmt = 'fixedAmount' in couponRes ? couponRes.fixedAmount : undefined;
+      const discPct = 'discount' in couponRes ? couponRes.discount : undefined;
+      if (discPct != null || fixedAmt != null) {
+        discountAmount = computeDiscountAmount(
+          { code: couponRes.code, discount: discPct ?? undefined, fixedAmount: fixedAmt ?? undefined },
+          subtotal
+        );
+        couponCodeToStore = couponRes.code;
+      }
     }
   }
   const shipping = params.shippingAmount ?? 0;
   const tax = params.taxAmount ?? 0;
   const total = Math.max(0, subtotal - discountAmount + shipping + tax);
-  const order = await prisma.order.create({
-    data: {
-      userId: session.user.id,
-      storeId,
-      status: 'PENDING',
-      subtotal,
-      discount: discountAmount,
-      total,
-      couponCode: couponCodeToStore,
-      shippingAddress: params.shippingAddress as unknown as object,
-      orderItems: {
-        create: params.items.map((i) => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          price: i.price,
-        })),
+
+  const order = await prisma.$transaction(async (tx) => {
+    const created = await tx.order.create({
+      data: {
+        userId: session.user.id,
+        storeId,
+        status: 'PENDING',
+        subtotal,
+        discount: discountAmount,
+        total,
+        couponCode: couponCodeToStore,
+        shippingAddress: params.shippingAddress as unknown as object,
+        orderItems: {
+          create: params.items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            price: i.price,
+          })),
+        },
       },
-    },
-  });
-  if (couponCodeToStore) {
-    await prisma.coupon.updateMany({
-      where: { code: couponCodeToStore },
-      data: { usedCount: { increment: 1 } },
     });
-  }
+    for (const item of params.items) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+    if (couponCodeToStore) {
+      await tx.coupon.updateMany({
+        where: { code: couponCodeToStore },
+        data: { usedCount: { increment: 1 } },
+      });
+    }
+    return created;
+  });
+
   return { orderId: order.id };
 }

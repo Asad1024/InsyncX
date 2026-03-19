@@ -43,7 +43,7 @@ export async function applyCoupon(code: string, subtotal?: number, orderStoreIdO
       where: { id: { in: orderStoreIdOrProductIds } },
       select: { id: true, storeId: true },
     });
-    const storeIds = [...new Set(products.map((p) => p.storeId))];
+    const storeIds = Array.from(new Set(products.map((p) => p.storeId)));
     if (products.length === 0 || storeIds.length === 0) {
       return { error: COUPON_ERROR_GENERIC };
     }

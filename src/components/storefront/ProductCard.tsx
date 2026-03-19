@@ -11,15 +11,23 @@ import { useSession } from 'next-auth/react';
 import { useDisplaySettings } from '@/context/display-settings';
 import { Heart } from 'lucide-react';
 import { formatPrice, getFirstProductImage } from '@/lib/utils';
-import type { Product, Store, Category } from '@prisma/client';
+import type { Store, Category } from '@prisma/client';
 
-type ProductWithRelations = Product & {
+/** Fields ProductCard reads — full Prisma `Product` rows satisfy this. */
+export type ProductCardProduct = {
+  id: string;
+  title: string;
+  slug: string;
+  price: unknown;
+  comparePrice?: unknown;
+  images: unknown;
+  isFeatured: boolean;
   store: Pick<Store, 'name' | 'slug' | 'isOfficial'>;
   category: Pick<Category, 'name' | 'slug'>;
 };
 
 interface ProductCardProps {
-  product: ProductWithRelations;
+  product: ProductCardProduct;
   variant?: 'default' | 'official';
 }
 

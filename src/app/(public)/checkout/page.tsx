@@ -171,18 +171,24 @@ function CheckoutPageContent() {
       setCouponLoading(false);
       return;
     }
+    if (!('code' in res)) {
+      setCouponLoading(false);
+      return;
+    }
     const eligible =
       'eligibleProductIds' in res && Array.isArray(res.eligibleProductIds) && res.eligibleProductIds.length > 0
         ? res.eligibleProductIds
         : null;
+    const fixedAmt = 'fixedAmount' in res ? res.fixedAmount : undefined;
+    const discPct = 'discount' in res ? res.discount : undefined;
     setAppliedCoupon({
       code: res.code,
-      discountPercent: res.fixedAmount != null ? null : (res.discount ?? 0),
-      fixedAmount: res.fixedAmount ?? null,
+      discountPercent: fixedAmt != null ? null : (discPct ?? 0),
+      fixedAmount: fixedAmt ?? null,
       eligibleProductIds: eligible,
     });
     setCouponInput('');
-    toast({ title: `Coupon ${res!.code} applied`, variant: 'success' });
+    toast({ title: `Coupon ${res.code} applied`, variant: 'success' });
     setCouponLoading(false);
   };
 

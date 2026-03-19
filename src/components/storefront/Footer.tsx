@@ -17,6 +17,8 @@ const HELP_LINKS = [
   { label: 'Contact', href: '#' },
   { label: 'Shipping & Returns', href: '#' },
   { label: 'FAQ', href: '#' },
+  { label: 'Terms of Service', href: '/terms' },
+  { label: 'Privacy Policy', href: '/privacy' },
 ];
 
 export function Footer() {

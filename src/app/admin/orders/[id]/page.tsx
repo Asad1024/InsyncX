@@ -132,12 +132,12 @@ export default async function AdminOrderDetailPage({ params }: Props) {
                   {order.user?.phone && <p className="text-[13px]" style={{ color: 'var(--text-4)' }}>{order.user.phone}</p>}
                 </div>
               </li>
-              {address?.phone && (
+              {address && typeof address.phone === 'string' && address.phone ? (
                 <li className="flex items-start gap-3">
                   <Phone className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--text-4)' }} />
-                  <span>{String(address.phone)}</span>
+                  <span>{address.phone}</span>
                 </li>
-              )}
+              ) : null}
               {address && (
                 <li className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--text-4)' }} />

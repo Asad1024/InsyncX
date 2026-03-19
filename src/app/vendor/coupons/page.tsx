@@ -58,7 +58,7 @@ export default async function VendorCouponsPage({
               <tr key={c.id} className="border-b" style={{ borderColor: 'var(--line)' }}>
                 <td className="py-3.5 px-4 font-sans text-[13px] font-semibold font-mono" style={{ color: 'var(--gold)' }}>{c.code}</td>
                 <td className="py-3.5 px-4"><span className="badge badge-neutral">{c.type}</span></td>
-                <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>{c.discount}{c.type === 'PERCENT' ? '%' : ''}</td>
+                <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>{Number(c.discount)}{c.type === 'PERCENT' ? '%' : ''}</td>
                 <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-3)' }}>{c.usedCount}{c.usageLimit != null ? ` / ${c.usageLimit}` : ''}</td>
                 <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-3)' }}>{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : 'Never'}</td>
                 <td className="py-3.5 px-4">

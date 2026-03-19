@@ -128,18 +128,18 @@ export default async function OrderDetailPage({ params }: Props) {
                 {formatPrice(Number(order.subtotal))}
               </span>
             </div>
-            {order.discount > 0 && (
+            {Number(order.discount) > 0 && (
               <div className="flex justify-between py-2.5 border-b" style={{ borderColor: 'var(--line)' }}>
                 <span className="font-sans text-[13px]" style={{ color: 'var(--text-3)' }}>Discount</span>
                 <span className="font-sans text-[13px] font-medium" style={{ color: 'var(--green)' }}>
-                  -{formatPrice(order.discount)}
+                  -{formatPrice(Number(order.discount))}
                 </span>
               </div>
             )}
             <div className="flex justify-between py-2.5 border-b" style={{ borderColor: 'var(--line)' }}>
               <span className="font-sans text-[13px]" style={{ color: 'var(--text-3)' }}>Shipping</span>
               <span className="font-sans text-[13px] font-medium" style={{ color: 'var(--text)' }}>
-                {order.discount > 0 ? '—' : '—'}
+                —
               </span>
             </div>
             <div className="flex justify-between py-2.5 pt-3">
@@ -184,11 +184,11 @@ export default async function OrderDetailPage({ params }: Props) {
               <div className="flex gap-2">
                 <MapPin className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--gold)' }} />
                 <div className="font-sans text-[13px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
-                  {address.name && (
+                  {typeof address.name === 'string' && address.name ? (
                     <p className="font-sans text-[14px] font-medium mb-0.5" style={{ color: 'var(--text)' }}>
-                      {String(address.name)}
+                      {address.name}
                     </p>
-                  )}
+                  ) : null}
                   {[
                     address.line1,
                     address.line2,
@@ -200,11 +200,12 @@ export default async function OrderDetailPage({ params }: Props) {
                         {String(line)}
                       </p>
                     ))}
-                  {(address as Record<string, unknown>).phone && (
+                  {typeof (address as Record<string, unknown>).phone === 'string' &&
+                  (address as Record<string, unknown>).phone ? (
                     <p className="mt-2 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>
-                      Phone: {String((address as Record<string, unknown>).phone)}
+                      Phone: {(address as Record<string, string>).phone}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </div>

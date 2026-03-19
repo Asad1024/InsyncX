@@ -14,7 +14,7 @@ export function ApproveVendor({ storeId }: { storeId: string }) {
     setLoading(true);
     const res = await approveVendorStore(storeId);
     if (res?.error) {
-      toast({ title: res.error, variant: 'destructive' });
+      toast({ title: res.error, variant: 'error' });
     } else {
       toast({ title: 'Store approved', variant: 'default' });
       router.refresh();

@@ -173,8 +173,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
-    redirect({ url, baseUrl, token }) {
+    redirect(p) {
+      const { url, baseUrl } = p;
       const base = (baseUrl || process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'http://localhost:3000').replace(/\/$/, '');
+      const token = (p as { token?: { needsPassword?: boolean } }).token;
       if (token?.needsPassword === true) return `${base}/auth/register?complete=1`;
       if (!url || typeof url !== 'string') return `${base}/`;
       if (url.startsWith('http')) {

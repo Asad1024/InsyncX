@@ -59,7 +59,7 @@ export default async function AdminCouponsPage({
                   <td className="py-3.5 px-4 font-sans text-[13px] font-semibold font-mono" style={{ color: 'var(--gold)' }}>{c.code}</td>
                   <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>{c.store?.name ?? 'Platform'}</td>
                   <td className="py-3.5 px-4"><span className="badge badge-neutral">{c.type}</span></td>
-                  <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>{c.discount}{c.type === 'PERCENT' ? '%' : ''}</td>
+                  <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-2)' }}>{Number(c.discount)}{c.type === 'PERCENT' ? '%' : ''}</td>
                   <td className="py-3.5 px-4 font-sans text-[13px]" style={{ color: 'var(--text-3)' }}>{c.usedCount}{c.usageLimit != null ? ` / ${c.usageLimit}` : ''}</td>
                   <td className="py-3.5 px-4 text-right">
                     <span className="inline-flex items-center gap-1">

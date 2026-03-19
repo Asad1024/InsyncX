@@ -15,7 +15,7 @@ export function RequestApprovalAgainButton({ storeId }: { storeId: string }) {
     setLoading(true);
     const res = await requestApprovalAgain(storeId);
     if (res?.error) {
-      toast({ title: res.error, variant: 'destructive' });
+      toast({ title: res.error, variant: 'error' });
     } else {
       toast({ title: 'Request sent. Your store is back in review.', variant: 'default' });
       router.refresh();

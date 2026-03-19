@@ -15,7 +15,7 @@ function getStripeInstance(): Stripe {
 /** Lazy Stripe client — only created when used and when STRIPE_SECRET_KEY is set. */
 export const stripe = new Proxy({} as Stripe, {
   get(_, prop) {
-    return (getStripeInstance() as Record<string, unknown>)[prop as string];
+    return (getStripeInstance() as unknown as Record<string, unknown>)[prop as string];
   },
 });
 
