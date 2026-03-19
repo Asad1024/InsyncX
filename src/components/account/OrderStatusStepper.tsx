@@ -8,6 +8,10 @@ const statusToStep: Record<OrderStatus, number> = {
   SHIPPED: 2,
   DELIVERED: 3,
   CANCELLED: -1,
+  RETURN_REQUESTED: 3,
+  RETURN_APPROVED: 3,
+  RETURN_REJECTED: 3,
+  RETURNED: 3,
 };
 
 interface OrderStatusStepperProps {
@@ -17,6 +21,7 @@ interface OrderStatusStepperProps {
 export function OrderStatusStepper({ currentStatus }: OrderStatusStepperProps) {
   const stepIndex = statusToStep[currentStatus] ?? 0;
   const isCancelled = currentStatus === 'CANCELLED';
+  const isReturnFlow = currentStatus.startsWith('RETURN_');
 
   if (isCancelled) {
     return (
@@ -30,6 +35,24 @@ export function OrderStatusStepper({ currentStatus }: OrderStatusStepperProps) {
           </div>
           <span className="font-sans text-[12px] font-medium uppercase tracking-[0.06em]" style={{ color: 'var(--text)' }}>
             Order cancelled
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isReturnFlow) {
+    return (
+      <div className="card card-p">
+        <div className="flex items-center justify-center gap-3">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center border-2"
+            style={{ background: 'var(--amber-bg)', borderColor: 'var(--amber)' }}
+          >
+            <Check className="w-5 h-5" style={{ color: 'var(--amber)' }} />
+          </div>
+          <span className="font-sans text-[12px] font-medium uppercase tracking-[0.06em]" style={{ color: 'var(--text)' }}>
+            {currentStatus.replace('_', ' ')}
           </span>
         </div>
       </div>

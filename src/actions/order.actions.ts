@@ -5,6 +5,29 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import type { OrderStatus } from '@prisma/client';
 
+const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['SHIPPED', 'CANCELLED'],
+  SHIPPED: ['DELIVERED'],
+  DELIVERED: ['RETURN_REQUESTED'],
+  CANCELLED: [],
+  RETURN_REQUESTED: ['RETURN_APPROVED', 'RETURN_REJECTED'],
+  RETURN_APPROVED: ['RETURNED'],
+  RETURN_REJECTED: [],
+  RETURNED: [],
+};
+
+function canTransition(current: OrderStatus, next: OrderStatus) {
+  return ALLOWED_TRANSITIONS[current]?.includes(next) ?? false;
+}
+
+function shouldRestock(current: OrderStatus, next: OrderStatus) {
+  return (
+    (next === 'CANCELLED' && (current === 'PENDING' || current === 'CONFIRMED')) ||
+    (next === 'RETURNED' && current === 'RETURN_APPROVED')
+  );
+}
+
 export async function createOrder(params: {
   storeId: string;
   items: { productId: string; quantity: number; price: number }[];
@@ -57,14 +80,14 @@ export async function createOrder(params: {
 export async function updateOrderStatus(
   orderId: string,
   status: OrderStatus,
-  actor: 'vendor' | 'admin'
+  actor: 'vendor' | 'admin' | 'customer'
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Not signed in' };
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: { store: true },
+    include: { store: true, orderItems: true },
   });
   if (!order) return { error: 'Order not found' };
 
@@ -74,14 +97,33 @@ export async function updateOrderStatus(
     }
   }
   if (actor === 'admin' && session.user.role !== 'ADMIN') return { error: 'Forbidden' };
+  if (actor === 'customer' && order.userId !== session.user.id) return { error: 'Not your order' };
 
-  await prisma.order.update({
-    where: { id: orderId },
-    data: { status },
+  if (!canTransition(order.status, status)) {
+    return { error: `Cannot move order from ${order.status.replace('_', ' ')} to ${status.replace('_', ' ')}` };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
+
+    if (shouldRestock(order.status, status)) {
+      for (const item of order.orderItems) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    }
   });
+
   revalidatePath('/vendor/orders');
+  revalidatePath(`/vendor/orders/${orderId}`);
   revalidatePath('/admin/orders');
   revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath('/account/orders');
   revalidatePath(`/account/orders/${orderId}`);
   return { success: true };
 }

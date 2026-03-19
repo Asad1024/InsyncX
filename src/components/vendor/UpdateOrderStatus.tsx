@@ -5,13 +5,18 @@ import { useRouter } from 'next/navigation';
 import { updateOrderStatus } from '@/actions/order.actions';
 import type { OrderStatus } from '@prisma/client';
 import { Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-const nextStatus: Record<OrderStatus, OrderStatus | null> = {
-  PENDING: 'CONFIRMED',
-  CONFIRMED: 'SHIPPED',
-  SHIPPED: 'DELIVERED',
-  DELIVERED: null,
-  CANCELLED: null,
+const transitions: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ['CONFIRMED', 'CANCELLED'],
+  CONFIRMED: ['SHIPPED', 'CANCELLED'],
+  SHIPPED: ['DELIVERED'],
+  DELIVERED: [],
+  CANCELLED: [],
+  RETURN_REQUESTED: ['RETURN_APPROVED', 'RETURN_REJECTED'],
+  RETURN_APPROVED: ['RETURNED'],
+  RETURN_REJECTED: [],
+  RETURNED: [],
 };
 
 type Actor = 'vendor' | 'admin';
@@ -26,36 +31,57 @@ export function UpdateOrderStatus({
   actor?: Actor;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const next = nextStatus[currentStatus];
-  if (!next) return null;
+  const [selected, setSelected] = useState<OrderStatus | ''>('');
+  const options = transitions[currentStatus];
+  if (!options.length) return null;
 
-  const label = next.replace('_', ' ');
   const handleUpdate = async () => {
+    if (!selected) return;
     setLoading(true);
-    await updateOrderStatus(orderId, next, actor);
-    router.refresh();
+    const res = await updateOrderStatus(orderId, selected, actor);
+    if (res?.error) toast({ title: res.error, variant: 'error' });
+    else {
+      toast({ title: `Order marked as ${selected.replace('_', ' ')}`, variant: 'success' });
+      router.refresh();
+    }
     setLoading(false);
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleUpdate}
-      disabled={loading}
-      className="inline-flex items-center justify-center gap-2.5 font-sans text-[15px] font-semibold uppercase tracking-[0.08em] px-8 py-4 rounded-[12px] transition-all duration-200 hover:opacity-90 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-      style={{
-        background: 'var(--gold)',
-        color: '#000',
-        boxShadow: '0 4px 14px rgba(212,168,67,0.35)',
-      }}
-    >
-      {loading ? (
-        <span className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-      ) : (
-        <Check className="w-5 h-5" strokeWidth={2.5} />
-      )}
-      Mark as {label}
-    </button>
+    <div className="flex items-center gap-3">
+      <select
+        value={selected}
+        onChange={(e) => setSelected(e.target.value as OrderStatus)}
+        className="input h-[46px] min-w-[220px]"
+        disabled={loading}
+      >
+        <option value="">Select next status</option>
+        {options.map((status) => (
+          <option key={status} value={status}>
+            {status.replace('_', ' ')}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        onClick={handleUpdate}
+        disabled={loading || !selected}
+        className="inline-flex items-center justify-center gap-2.5 font-sans text-[14px] font-semibold uppercase tracking-[0.08em] px-6 py-3 rounded-[12px] transition-all duration-200 hover:opacity-90 hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{
+          background: 'var(--gold)',
+          color: '#000',
+          boxShadow: '0 4px 14px rgba(212,168,67,0.35)',
+        }}
+      >
+        {loading ? (
+          <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+        ) : (
+          <Check className="w-4 h-4" strokeWidth={2.5} />
+        )}
+        Update
+      </button>
+    </div>
   );
 }

@@ -27,7 +27,18 @@ export default async function VendorOrdersPage({
   });
   const { status: statusParam, search: searchParam = '' } = await searchParams;
   let filtered =
-    statusParam && ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED'].includes(statusParam)
+    statusParam &&
+    [
+      'PENDING',
+      'CONFIRMED',
+      'SHIPPED',
+      'DELIVERED',
+      'CANCELLED',
+      'RETURN_REQUESTED',
+      'RETURN_APPROVED',
+      'RETURN_REJECTED',
+      'RETURNED',
+    ].includes(statusParam)
       ? orders.filter((o) => o.status === statusParam)
       : orders;
   if (searchParam.trim()) {
@@ -46,6 +57,9 @@ export default async function VendorOrdersPage({
     { label: 'Confirmed', href: '/vendor/orders?status=CONFIRMED' },
     { label: 'Shipped', href: '/vendor/orders?status=SHIPPED' },
     { label: 'Delivered', href: '/vendor/orders?status=DELIVERED' },
+    { label: 'Cancelled', href: '/vendor/orders?status=CANCELLED' },
+    { label: 'Return requested', href: '/vendor/orders?status=RETURN_REQUESTED' },
+    { label: 'Returned', href: '/vendor/orders?status=RETURNED' },
   ];
 
   return (

@@ -6,6 +6,7 @@ import { formatPrice, getFirstProductImage } from '@/lib/utils';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Breadcrumb } from '@/components/storefront/Breadcrumb';
 import { OrderStatusStepper } from '@/components/account/OrderStatusStepper';
+import { OrderActions } from '@/components/account/OrderActions';
 import { MapPin, Tag } from 'lucide-react';
 
 interface Props { params: Promise<{ id: string }> }
@@ -222,6 +223,8 @@ export default async function OrderDetailPage({ params }: Props) {
               Contact Support
             </Link>
           </div>
+
+          <OrderActions orderId={order.id} status={order.status} />
         </div>
       </div>
     </div>

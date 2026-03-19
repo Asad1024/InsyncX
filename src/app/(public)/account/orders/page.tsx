@@ -12,6 +12,10 @@ const TABS: { value: '' | OrderStatus; label: string }[] = [
   { value: 'SHIPPED', label: 'Shipped' },
   { value: 'DELIVERED', label: 'Delivered' },
   { value: 'CANCELLED', label: 'Cancelled' },
+  { value: 'RETURN_REQUESTED', label: 'Return Requested' },
+  { value: 'RETURN_APPROVED', label: 'Return Approved' },
+  { value: 'RETURN_REJECTED', label: 'Return Rejected' },
+  { value: 'RETURNED', label: 'Returned' },
 ];
 
 export default async function OrdersPage({
