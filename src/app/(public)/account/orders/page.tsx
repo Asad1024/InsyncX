@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { OrderStatus } from '@prisma/client';
 import { OrderCard } from '@/components/account/OrderCard';
 import { ShoppingBag } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const TABS: { value: '' | OrderStatus; label: string }[] = [
   { value: '', label: 'All' },
@@ -34,20 +35,15 @@ export default async function OrdersPage({
       : orders;
 
   return (
-    <div className="py-10 px-12" style={{ padding: '40px 48px' }}>
-      <div className="flex items-center justify-between mb-8">
-        <h1
-          className="font-display text-[40px] font-light"
-          style={{ color: 'var(--text)' }}
-        >
-          My Orders
-        </h1>
-        <p className="font-sans text-[13px]" style={{ color: 'var(--text-3)' }}>
+    <div className="px-4 py-8 md:px-8 lg:px-10 xl:px-12">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 md:mb-8">
+        <h1 className="account-name-gradient text-[clamp(28px,5vw,44px)] leading-tight">My Orders</h1>
+        <p className="font-sans text-[13px] text-[var(--muted)]">
           {filtered.length} order{filtered.length !== 1 ? 's' : ''}
         </p>
       </div>
 
-      <div className="flex gap-0 border-b mb-8" style={{ borderColor: 'var(--line)' }}>
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:mb-8 md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
         {TABS.map(({ value, label }) => {
           const isActive = statusFilter === value;
           const href = value ? `/account/orders?status=${value}` : '/account/orders';
@@ -55,11 +51,12 @@ export default async function OrdersPage({
             <Link
               key={value || 'all'}
               href={href}
-              className="font-sans text-[13px] font-medium py-2.5 px-[18px] border-b-2 -mb-px transition-all duration-150 bg-transparent border-t-0 border-l-0 border-r-0"
-              style={{
-                color: isActive ? 'var(--gold)' : 'var(--text-3)',
-                borderBottomColor: isActive ? 'var(--gold)' : 'transparent',
-              }}
+              className={cn(
+                'shrink-0 rounded-full border px-3.5 py-2 font-sans text-[11px] font-medium transition-all duration-200 md:text-[12px]',
+                isActive
+                  ? 'border-transparent bg-gradient-to-br from-[var(--blue)] to-[var(--blue-mid)] text-white shadow-[0_0_20px_rgba(29,110,255,0.35)]'
+                  : 'border-white/10 bg-[rgba(255,255,255,0.03)] text-[var(--muted)] hover:border-[rgba(29,110,255,0.35)] hover:text-[var(--white)]'
+              )}
             >
               {label}
             </Link>
@@ -68,28 +65,24 @@ export default async function OrdersPage({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="card text-center py-16 px-6">
-          <ShoppingBag
-            className="w-12 h-12 mx-auto mb-4"
-            style={{ color: 'var(--text-4)' }}
-          />
-          <h2
-            className="font-display text-[28px] font-light"
-            style={{ color: 'var(--text)' }}
-          >
-            No orders yet
-          </h2>
-          <p className="font-sans text-[13px] mt-2" style={{ color: 'var(--text-3)' }}>
-            {orders.length === 0
-              ? 'Start shopping to see your orders here.'
-              : 'No orders match this filter.'}
-          </p>
-          <Link
-            href="/shop"
-            className="btn btn-primary btn-sm mt-6 inline-block"
-          >
-            Start shopping
-          </Link>
+        <div className="account-glass-panel text-center">
+          <div className="px-6 py-16 md:py-20">
+            <ShoppingBag className="mx-auto mb-4 h-12 w-12 text-[var(--muted)]" strokeWidth={1.25} />
+            <h2 className="font-display text-[24px] font-bold text-[var(--white)] md:text-[28px]">
+              No orders yet
+            </h2>
+            <p className="mt-2 font-sans text-[13px] text-[var(--muted)]">
+              {orders.length === 0
+                ? 'Start shopping to see your orders here.'
+                : 'No orders match this filter.'}
+            </p>
+            <Link
+              href="/shop"
+              className="auth-submit-btn cart-checkout-neon mt-8 inline-flex rounded-[10px] border-0 px-8 py-3 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-white no-underline"
+            >
+              Start shopping
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useDisplaySettings } from '@/context/display-settings';
 import { formatPrice, getFirstProductImage } from '@/lib/utils';
 import type { Product, Store, Category } from '@prisma/client';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { homeViewport, sectionRevealVariants } from '@/lib/motion';
 
 type ProductWithRelations = Product & {
   store: Pick<Store, 'name' | 'slug' | 'isOfficial'>;
@@ -15,6 +17,66 @@ type ProductWithRelations = Product & {
 
 interface HeroProps {
   featuredProducts?: ProductWithRelations[];
+}
+
+function easeOutCubic(t: number) {
+  return 1 - (1 - t) ** 3;
+}
+
+function HeroStatCell({
+  target,
+  label,
+  active,
+  delayMs,
+}: {
+  target: number;
+  label: string;
+  active: boolean;
+  delayMs: number;
+}) {
+  const [value, setValue] = useState(0);
+  const ranRef = useRef(false);
+
+  useEffect(() => {
+    if (!active || target <= 0 || ranRef.current) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setValue(target);
+      ranRef.current = true;
+      return;
+    }
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      ranRef.current = true;
+      const start = performance.now();
+      const durationMs = 1050;
+      let raf = 0;
+      const tick = (now: number) => {
+        if (cancelled) return;
+        const u = Math.min(1, (now - start) / durationMs);
+        setValue(Math.round(target * easeOutCubic(u)));
+        if (u < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }, delayMs);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [active, target, delayMs]);
+
+  return (
+    <div className="min-w-0 text-left">
+      <div
+        className="font-display font-extrabold insync-gradient-text leading-none tabular-nums"
+        style={{ fontSize: 20, letterSpacing: '-0.6px' }}
+      >
+        {value}+
+      </div>
+      <div className="mt-1 font-sans text-[10px] uppercase leading-snug tracking-[0.12em]" style={{ color: 'var(--muted)' }}>
+        {label}
+      </div>
+    </div>
+  );
 }
 
 function HeroParticles() {
@@ -113,23 +175,27 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
   }, []);
 
   const stackProducts = featuredProducts.slice(0, 1);
-  const stats = useMemo(() => {
+  const statTargets = useMemo(() => {
     const storeCount = new Set(featuredProducts.map((p) => p.store?.slug).filter(Boolean)).size;
     const categoryCount = new Set(featuredProducts.map((p) => p.category?.slug).filter(Boolean)).size;
     return [
-      { value: `${Math.max(8, featuredProducts.length)}+`, label: 'Featured drops' },
-      { value: `${Math.max(3, storeCount)}+`, label: 'Vendors live' },
-      { value: `${Math.max(6, categoryCount)}+`, label: 'Categories' },
+      { n: Math.max(8, featuredProducts.length), label: 'Featured drops' },
+      { n: Math.max(3, storeCount), label: 'Vendors live' },
+      { n: Math.max(6, categoryCount), label: 'Categories' },
     ];
   }, [featuredProducts]);
 
   return (
-    <section
+    <motion.section
       ref={(n) => {
         heroRef.current = n;
       }}
-      className="relative w-full overflow-hidden"
+      className="relative w-full overflow-hidden pb-0"
       style={{ minHeight: 'calc(88vh - var(--nav-h))' }}
+      initial="hidden"
+      whileInView="visible"
+      viewport={homeViewport}
+      variants={sectionRevealVariants}
     >
       {/* Background (no photos) */}
       <div className="absolute inset-0 left-0 top-0 h-full w-full">
@@ -194,102 +260,77 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
               </span>
             </div>
 
-            <h1
-              className="mt-6 font-display font-black leading-[1.0]"
-              style={{ fontSize: 'clamp(50px, 6.0vw, 88px)', letterSpacing: '-2px' }}
-            >
-              <span className="insync-gradient-text">SHOP</span>{' '}
+            <h1 className="mt-6 font-display font-black leading-[1.0]" aria-label="SHOP INSYNCX DIFFERENT">
               <span
-                style={{
-                  WebkitTextStroke: '2px rgba(238,242,255,0.25)',
-                  color: 'transparent',
-                }}
+                className="inline-flex max-w-full flex-wrap items-baseline gap-x-[0.22em] gap-y-1"
+                style={{ fontSize: 'clamp(36px, 4.55vw, 64px)', letterSpacing: '-1.65px' }}
               >
-                INSYNC
-              </span>{' '}
-              <span className="insync-gradient-text">DIFFERENT</span>
+                <span className="insync-gradient-text">SHOP</span>
+                <span
+                  className="inline-flex items-baseline font-black"
+                  style={{
+                    fontSize: 'clamp(26px, 3.35vw, 48px)',
+                    letterSpacing: '-1.2px',
+                    WebkitTextStroke: '2px rgba(238,242,255,0.25)',
+                    color: 'transparent',
+                  }}
+                >
+                  INSYNC
+                  <span className="insync-hero-x-shine" aria-hidden="true">
+                    X
+                  </span>
+                </span>
+                <span className="insync-gradient-text">DIFFERENT</span>
+              </span>
             </h1>
 
             <p className="mt-5 font-sans text-[14px] font-light leading-[1.7] max-w-[420px]" style={{ color: 'var(--muted)' }}>
-              Curated multi-vendor drops, official picks, and fresh arrivals—built for momentum. Discover pieces that move with you.
+              Curated multi-vendor drops, official picks, and fresh arrivals. Discover pieces that move with you.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link
-                href="/shop"
-                className="inline-flex items-center justify-center rounded-[8px] px-6 py-3 font-sans text-[13px] font-semibold uppercase tracking-[0.12em]"
-                style={{
-                  background: 'linear-gradient(135deg, var(--blue), var(--blue-mid))',
-                  boxShadow: '0 0 28px rgba(29,110,255,0.45)',
-                  color: 'var(--white)',
-                }}
-              >
-                Discover
-              </Link>
-              <a
-                href="#fresh-arrivals"
-                className="inline-flex items-center justify-center rounded-[8px] px-6 py-3 font-sans text-[13px] font-semibold uppercase tracking-[0.12em] border"
-                style={{
-                  borderColor: 'rgba(29,110,255,0.3)',
-                  background: 'rgba(6,18,50,0.35)',
-                  color: 'var(--white)',
-                  backdropFilter: 'blur(16px)',
-                }}
-              >
-                New arrivals
-              </a>
-            </div>
-
-            <div className="mt-10 pt-6 border-t" style={{ borderTopColor: 'rgba(29,110,255,0.15)' }}>
-              <div className="grid grid-cols-3 gap-6">
-                {stats.map((s) => (
-                  <div key={s.label}>
-                    <div className="font-display font-extrabold insync-gradient-text" style={{ fontSize: 22, letterSpacing: '-0.8px' }}>
-                      {s.value}
-                    </div>
-                    <div className="mt-1 font-sans text-[11px] uppercase tracking-[0.16em]" style={{ color: 'var(--muted)' }}>
-                      {s.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Scroll indicator */}
-            <div className="hidden md:flex items-center gap-3 mt-10" style={{ color: 'rgba(238,242,255,0.65)' }}>
-              <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.22em]">Scroll</span>
-              <span
-                className="relative block w-12 h-[2px] overflow-hidden rounded-full"
-                style={{ background: 'rgba(29,110,255,0.18)' }}
-              >
-                <span
-                  className="absolute left-0 top-0 h-full w-1/3"
+            <div className="mt-8 w-fit max-w-full">
+              <div className="flex flex-wrap items-center gap-4">
+                <Link
+                  href="/shop"
+                  data-cursor="interactive"
+                  className="insync-hero-discover-btn inline-flex items-center justify-center rounded-[8px] px-6 py-3 font-sans text-[13px] font-semibold uppercase tracking-[0.12em]"
+                  style={{ color: 'var(--white)' }}
+                >
+                  <span className="relative z-[2]">Discover</span>
+                </Link>
+                <a
+                  href="#fresh-arrivals"
+                  className="inline-flex items-center justify-center rounded-[8px] px-6 py-3 font-sans text-[13px] font-semibold uppercase tracking-[0.12em] border"
                   style={{
-                    background: 'linear-gradient(90deg, var(--blue), var(--cyan))',
-                    animation: 'marqueeLeft 1.2s linear infinite',
+                    borderColor: 'rgba(29,110,255,0.3)',
+                    background: 'rgba(6,18,50,0.35)',
+                    color: 'var(--white)',
+                    backdropFilter: 'blur(16px)',
                   }}
-                />
-              </span>
+                >
+                  New arrivals
+                </a>
+              </div>
+
+              <div className="mt-6 w-full">
+                <div className="grid grid-cols-3 gap-x-4 gap-y-2">
+                  {statTargets.map((s, i) => (
+                    <HeroStatCell
+                      key={`${s.label}-${s.n}`}
+                      target={s.n}
+                      label={s.label}
+                      active={heroActive}
+                      delayMs={i * 90}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Right: product stack */}
           <div className="relative flex justify-center lg:justify-end">
             <div className="relative w-[min(440px,100%)]">
-              {/* Floating badges */}
-              <div
-                className="absolute top-0 right-2 z-20 translate-y-[14px] rounded-full px-4 py-2"
-                style={{
-                  background: 'linear-gradient(90deg, var(--blue), var(--cyan))',
-                  color: '#001028',
-                  fontWeight: 800,
-                  letterSpacing: '0.06em',
-                  animation: 'insyncFloat 3.2s ease-in-out infinite',
-                }}
-              >
-                🔥 Just Dropped
-              </div>
-
               {freeShippingText && (
                 <div
                   className="absolute -bottom-4 left-2 z-20 rounded-full px-4 py-2 border"
@@ -305,7 +346,17 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
                 </div>
               )}
 
-              <div className="insync-hero-card-wrap" data-cursor="interactive">
+              <div className="insync-hero-card-wrap insync-hero-card-wrap--offset" data-cursor="interactive">
+                {/* Pinned to card top-right (hc-single translate 78px, 72px + card width) */}
+                <div className="insync-hero-just-dropped-wrap insync-hero-just-dropped-in-wrap">
+                  <div
+                    data-cursor="interactive"
+                    className="insync-hero-just-dropped-btn inline-flex items-center justify-center rounded-full px-4 py-2 font-sans text-[11px] font-extrabold uppercase tracking-[0.14em] md:text-[12px]"
+                    style={{ color: 'var(--white)' }}
+                  >
+                    <span className="relative z-[2]">🔥 Just Dropped</span>
+                  </div>
+                </div>
                 {stackProducts.map((p, i) => {
                   const img = getFirstProductImage(p.images);
                   const price = Number(p.price);
@@ -319,19 +370,21 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
                         background: 'var(--card-bg)',
                       }}
                     >
-                      <div className="insync-hc-img">
-                        {img ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={img} alt={p.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[56px]">🛍️</div>
-                        )}
-                      </div>
-                      <div className="insync-hc-vendor">{p.store?.name}</div>
-                      <div className="insync-hc-name">{p.title}</div>
-                      <div className="insync-hc-row">
-                        <div className="insync-hc-price">{formatPrice(price, displaySettings.currencySymbol)}</div>
-                        <span className="insync-hc-btn">Add</span>
+                      <div className="insync-hero-card-inner">
+                        <div className="insync-hc-img">
+                          {img ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={img} alt={p.title} className="insync-hc-img-el h-full w-full object-cover" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-[56px]">🛍️</div>
+                          )}
+                        </div>
+                        <div className="insync-hc-vendor">{p.store?.name}</div>
+                        <div className="insync-hc-name">{p.title}</div>
+                        <div className="insync-hc-row">
+                          <div className="insync-hc-price">{formatPrice(price, displaySettings.currencySymbol)}</div>
+                          <span className="insync-hc-btn">Add</span>
+                        </div>
                       </div>
                     </Link>
                   );
@@ -357,10 +410,10 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
           }}
         >
           <span>
-            SHOP · INSYNC · DROP · DIFFERENT · SHOP · INSYNC · DROP · DIFFERENT · SHOP · INSYNC · DROP · DIFFERENT ·{' '}
+            SHOP · INSYNCX · DROP · DIFFERENT · SHOP · INSYNCX · DROP · DIFFERENT · SHOP · INSYNCX · DROP · DIFFERENT ·{' '}
           </span>
           <span>
-            SHOP · INSYNC · DROP · DIFFERENT · SHOP · INSYNC · DROP · DIFFERENT · SHOP · INSYNC · DROP · DIFFERENT ·{' '}
+            SHOP · INSYNCX · DROP · DIFFERENT · SHOP · INSYNCX · DROP · DIFFERENT · SHOP · INSYNCX · DROP · DIFFERENT ·{' '}
           </span>
         </div>
       </div>
@@ -368,12 +421,20 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
       <style jsx global>{`
         .insync-hero-card-wrap {
           position: relative;
-          width: 300px;
-          height: 360px;
+          width: 308px;
+          height: 398px;
           perspective: 900px;
           margin-left: auto;
           margin-right: auto;
           overflow: visible;
+        }
+        .insync-hero-card-wrap--offset {
+          margin-top: 18px;
+        }
+        @media (min-width: 768px) {
+          .insync-hero-card-wrap--offset {
+            margin-top: 24px;
+          }
         }
         @media (min-width: 1024px) {
           .insync-hero-card-wrap {
@@ -382,24 +443,46 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
         }
         @media (max-width: 640px) {
           .insync-hero-card-wrap {
-            width: 280px;
-            height: 345px;
+            width: 286px;
+            height: 372px;
           }
         }
         .insync-hero-card {
           position: absolute;
-          width: 270px;
+          width: 278px;
           left: 0;
           top: 0;
           border-radius: 16px;
           padding: 20px;
           border: 1px solid var(--border);
           backdrop-filter: blur(20px);
-          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.55s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: transform;
           transform-style: preserve-3d;
           color: var(--white);
           z-index: 1;
+        }
+        .insync-hero-card-inner {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          height: 100%;
+          flex-direction: column;
+          transform-origin: 50% 55%;
+          transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform;
+        }
+        .insync-hero-card:hover .insync-hero-card-inner {
+          transform: scale(1.028) rotate(-1.6deg) translateY(-4px);
+        }
+        .insync-hc-img-el {
+          transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .insync-hero-card:hover .insync-hc-img-el {
+          transform: scale(1.06);
+        }
+        .insync-hero-card.hc-single:hover {
+          box-shadow: 0 30px 74px rgba(0, 0, 0, 0.5), 0 0 56px rgba(29, 110, 255, 0.36);
         }
         /* Stronger border shine (like a glowing CTA) */
         .insync-hero-card::before {
@@ -439,7 +522,7 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
         }
         @media (max-width: 640px) {
           .insync-hero-card {
-            width: 250px;
+            width: 258px;
           }
         }
         .hc-single {
@@ -450,7 +533,7 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
         }
         .insync-hc-img {
           width: 100%;
-          height: 155px;
+          height: 178px;
           border-radius: 10px;
           display: flex;
           align-items: center;
@@ -563,7 +646,99 @@ export function Hero({ featuredProducts = [] }: HeroProps) {
           --r: 0deg;
           --z: 0px;
         }
+
+        @keyframes insyncDiscoverGlow {
+          0%,
+          100% {
+            box-shadow:
+              0 0 22px rgba(29, 110, 255, 0.44),
+              0 0 48px rgba(0, 200, 255, 0.12),
+              0 6px 20px rgba(0, 0, 0, 0.32);
+          }
+          50% {
+            box-shadow:
+              0 0 36px rgba(29, 110, 255, 0.62),
+              0 0 68px rgba(0, 200, 255, 0.22),
+              0 8px 26px rgba(0, 0, 0, 0.28);
+          }
+        }
+        @keyframes insyncDiscoverLiquidBg {
+          0%,
+          100% {
+            background-position: 8% 42%;
+          }
+          50% {
+            background-position: 92% 58%;
+          }
+        }
+        @keyframes insyncDiscoverSheen {
+          from {
+            transform: translateX(-115%) skewX(-14deg);
+          }
+          to {
+            transform: translateX(115%) skewX(-14deg);
+          }
+        }
+        .insync-hero-just-dropped-wrap {
+          animation: insyncFloat 3.2s ease-in-out infinite;
+          transform-origin: center center;
+        }
+        /* Align with tilted card (.hc-single translate(78px,72px), width 278 → top-right of card) */
+        .insync-hero-just-dropped-in-wrap {
+          position: absolute;
+          z-index: 25;
+          top: 30px;
+          right: -48px;
+          pointer-events: none;
+        }
+        .insync-hero-just-dropped-in-wrap .insync-hero-just-dropped-btn {
+          pointer-events: auto;
+        }
+        @media (max-width: 640px) {
+          .insync-hero-just-dropped-in-wrap {
+            top: 28px;
+            right: -50px;
+          }
+        }
+        .insync-hero-discover-btn,
+        .insync-hero-just-dropped-btn {
+          position: relative;
+          overflow: hidden;
+          isolation: isolate;
+          background: linear-gradient(135deg, var(--blue) 0%, #2a7cff 42%, var(--blue-mid) 100%);
+          background-size: 200% 200%;
+          animation: insyncDiscoverGlow 2.65s ease-in-out infinite, insyncDiscoverLiquidBg 6s ease-in-out infinite;
+          transition: transform 0.45s cubic-bezier(0.34, 1.35, 0.64, 1), filter 0.4s ease;
+        }
+        .insync-hero-discover-btn::after,
+        .insync-hero-just-dropped-btn::after {
+          content: '';
+          position: absolute;
+          inset: -30% -40%;
+          background: linear-gradient(
+            105deg,
+            transparent 35%,
+            rgba(255, 255, 255, 0.38) 50%,
+            transparent 65%
+          );
+          transform: translateX(-120%);
+          opacity: 0;
+          pointer-events: none;
+          z-index: 1;
+          mix-blend-mode: overlay;
+        }
+        .insync-hero-discover-btn:hover,
+        .insync-hero-just-dropped-btn:hover {
+          transform: scale(1.055) translateY(-2px);
+          filter: brightness(1.08) saturate(1.06);
+          animation: insyncDiscoverGlow 1.25s ease-in-out infinite;
+        }
+        .insync-hero-discover-btn:hover::after,
+        .insync-hero-just-dropped-btn:hover::after {
+          opacity: 0.85;
+          animation: insyncDiscoverSheen 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
       `}</style>
-    </section>
+    </motion.section>
   );
 }

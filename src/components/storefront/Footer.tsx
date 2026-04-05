@@ -1,122 +1,86 @@
+'use client';
+
 import Link from 'next/link';
-import { NewsletterForm } from './NewsletterForm';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
-const SHOP_LINKS = [
-  { label: 'New Arrivals', href: '/shop?new=1' },
-  { label: 'Women', href: '/shop?category=women' },
-  { label: 'Men', href: '/shop?category=men' },
-  { label: 'Accessories', href: '/shop?category=accessories' },
-  { label: 'LGBTQ+', href: '/shop?category=lgbtq' },
-  { label: 'Wellness', href: '/shop?category=wellness' },
-  { label: 'Party', href: '/shop?category=party' },
-  { label: 'Exotic', href: '/shop?category=exotic' },
-  { label: 'Sale & Offers', href: '/shop?featured=1' },
-];
+const MAIN_LINKS = [
+  { label: 'Shop', href: '/shop' },
+  { label: 'FAQ', href: '/about#faq' },
+  { label: 'Terms', href: '/terms' },
+  { label: 'Privacy', href: '/privacy' },
+] as const;
 
-const HELP_LINKS = [
-  { label: 'Contact', href: '#' },
-  { label: 'Shipping & Returns', href: '#' },
-  { label: 'FAQ', href: '#' },
-  { label: 'Terms of Service', href: '/terms' },
-  { label: 'Privacy Policy', href: '/privacy' },
-];
+const SOCIAL = [
+  {
+    label: 'Facebook',
+    href: 'https://www.facebook.com/people/InsyncX/61556432913628/',
+    icon: (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/insyncx_store/',
+    icon: (
+      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+      </svg>
+    ),
+  },
+] as const;
 
-export function Footer() {
+export function Footer({ className }: { className?: string }) {
   return (
-    <footer className="bg-[var(--bg)] border-t" style={{ borderColor: 'var(--line)' }}>
-      <div className="max-w-[var(--content-max)] mx-auto px-6 py-14 md:py-16">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-16">
-          {/* Brand */}
-          <div className="lg:col-span-1">
-            <Link href="/" data-cursor="interactive" className="font-display text-[22px] font-black tracking-[-0.08em] insync-gradient-text">
-              INSYNC
-            </Link>
-            <p className="font-sans text-[13px] mt-3 max-w-[260px] leading-[1.8]" style={{ color: 'var(--muted)' }}>
-              Multi-vendor drops, official picks, and curated essentials—always in sync with you.
-            </p>
-            <div className="flex gap-3 mt-5">
-              <a href="#" data-cursor="interactive" aria-label="Instagram" className="text-[rgba(238,242,255,0.55)] hover:text-[var(--cyan)] transition-colors shrink-0">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM12 5.838c-3.403 0-6.162 2.759-6.162 6.162S8.597 18.163 12 18.163s6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zM12 16c-2.269 0-4.109-1.841-4.109-4.109S9.731 7.782 12 7.782s4.109 1.841 4.109 4.109S14.269 16 12 16zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                </svg>
+    <motion.footer
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className={cn('border-t border-white/10 bg-[var(--bg)]', className)}
+    >
+      <div className="max-w-content mx-auto px-6 py-8 md:py-9">
+        <div className="flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-between md:gap-8">
+          <Link href="/" className="insync-gradient-text font-display text-xl font-black tracking-tight">
+            INSYNC
+          </Link>
+
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:justify-end">
+            {MAIN_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                data-cursor="interactive"
+                className="text-sm text-[var(--muted)] transition-colors hover:text-white"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-3">
+            {SOCIAL.map((s) => (
+              <a
+                key={s.href}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.label}
+                data-cursor="interactive"
+                className="text-[var(--blue)] transition-colors hover:text-[var(--cyan)]"
+              >
+                {s.icon}
               </a>
-              <a href="#" data-cursor="interactive" aria-label="Facebook" className="text-[rgba(238,242,255,0.55)] hover:text-[var(--cyan)] transition-colors shrink-0">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Shop */}
-          <div>
-            <p className="font-display text-[12px] font-extrabold uppercase tracking-[0.18em] text-[var(--white)] mb-4">
-              Shop
-            </p>
-            <ul className="flex flex-col gap-2.5">
-              {SHOP_LINKS.map(({ label, href }) => (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    data-cursor="interactive"
-                    className="font-sans text-[13px] transition-colors"
-                    style={{ color: 'var(--muted)' }}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Help */}
-          <div>
-            <p className="font-display text-[12px] font-extrabold uppercase tracking-[0.18em] text-[var(--white)] mb-4">
-              Help
-            </p>
-            <ul className="flex flex-col gap-2.5">
-              {HELP_LINKS.map(({ label, href }) => (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    data-cursor="interactive"
-                    className="font-sans text-[13px] transition-colors hover:text-[var(--cyan)]"
-                    style={{ color: 'var(--muted)' }}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Newsletter / CTA */}
-          <div>
-            <p className="font-display text-[12px] font-extrabold uppercase tracking-[0.18em] text-[var(--white)] mb-4">
-              Stay in sync
-            </p>
-            <p className="font-sans text-[13px] mb-4" style={{ color: 'var(--muted)' }}>
-              New drops and offers. No spam.
-            </p>
-            <NewsletterForm />
+            ))}
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t" style={{ borderColor: 'var(--line)' }}>
-          <p className="font-sans text-[12px]" style={{ color: 'rgba(238,242,255,0.45)' }}>
-            © {new Date().getFullYear()} INSYNC. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <Link href="#" data-cursor="interactive" className="font-sans text-[12px] hover:text-[var(--cyan)] transition-colors" style={{ color: 'rgba(238,242,255,0.45)' }}>
-              Privacy
-            </Link>
-            <Link href="#" data-cursor="interactive" className="font-sans text-[12px] hover:text-[var(--cyan)] transition-colors" style={{ color: 'rgba(238,242,255,0.45)' }}>
-              Terms
-            </Link>
-          </div>
-        </div>
+        <p className="mt-6 text-center text-xs text-[var(--muted)] md:text-left">
+          © {new Date().getFullYear()} Insync. All rights reserved.
+        </p>
       </div>
-    </footer>
+    </motion.footer>
   );
 }

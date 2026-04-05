@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useDisplaySettings } from '@/context/display-settings';
 import { formatPrice } from '@/lib/utils';
 import type { HomepageFeaturedCoupon } from '@/actions/coupon.actions';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 
 function discountLabel(coupon: HomepageFeaturedCoupon, currencySymbol: string): string {
   if (coupon.type === 'PERCENT') return `${coupon.discount}% off`;
@@ -34,16 +36,15 @@ export function HomepageCouponSection({ coupons }: { coupons: HomepageFeaturedCo
   };
 
   return (
-    <section
-      data-reveal
-      data-reveal-stagger="1"
-      className="border-t border-b py-[100px] px-6 md:px-10 lg:px-12"
+    <SectionReveal
+      stagger
+      className="border-y px-6 py-[100px] md:px-10 lg:px-12"
       style={{ background: 'var(--bg)', borderColor: 'rgba(29,110,255,0.15)' }}
     >
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
           {/* Left: Sales / off messaging */}
-          <div data-reveal-child className="lg:col-span-4">
+          <RevealItem className="lg:col-span-4">
             <div className="flex items-center gap-2 mb-5">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -71,10 +72,10 @@ export function HomepageCouponSection({ coupons }: { coupons: HomepageFeaturedCo
             <Link href="/shop" data-cursor="interactive" className="btn btn-primary mt-7 inline-flex">
               Shop now
             </Link>
-          </div>
+          </RevealItem>
 
           {/* Right: Coupon cards */}
-          <div data-reveal-child className="lg:col-span-8">
+          <RevealItem className="lg:col-span-8">
             <div className="flex items-center gap-2 mb-6">
               <Tag className="w-4 h-4" style={{ color: 'var(--cyan)' }} />
               <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: 'rgba(238,242,255,0.55)' }}>
@@ -150,9 +151,9 @@ export function HomepageCouponSection({ coupons }: { coupons: HomepageFeaturedCo
                 </div>
               ))}
             </div>
-          </div>
+          </RevealItem>
         </div>
       </div>
-    </section>
+    </SectionReveal>
   );
 }

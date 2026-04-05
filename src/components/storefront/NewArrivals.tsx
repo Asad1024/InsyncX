@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 import type { Product, Store, Category } from '@prisma/client';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 
 type ProductWithRelations = Product & {
   store: Pick<Store, 'name' | 'slug' | 'isOfficial'>;
@@ -33,17 +35,15 @@ export function NewArrivals({ products }: NewArrivalsProps) {
       : products.filter((p) => p.category.slug === activeTab);
 
   return (
-    <section
+    <SectionReveal
+      stagger
       id="fresh-arrivals"
-      data-reveal
-      data-reveal-stagger="1"
-      className="py-[100px] px-6 md:px-10 lg:px-12 bg-[var(--bg)] border-t scroll-mt-[var(--nav-h)]"
-      style={{ borderColor: 'rgba(29,110,255,0.15)' }}
+      className="scroll-mt-[var(--nav-h)] bg-[var(--bg)] px-6 pb-12 pt-8 md:px-10 md:pb-14 md:pt-10 lg:px-12 lg:pb-16 lg:pt-12"
     >
-      <div data-reveal-child className="flex items-end justify-between mb-10">
+      <RevealItem className="mb-10 flex items-end justify-between">
         <div>
-          <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.22em] text-[var(--cyan)] inline-flex items-center gap-3">
-            <span className="inline-block w-7 h-px" style={{ background: 'rgba(0,200,255,0.7)' }} />
+          <p className="inline-flex items-center gap-3 font-sans text-[12px] font-semibold uppercase tracking-[0.22em] text-[var(--cyan)]">
+            <span className="inline-block h-px w-7" style={{ background: 'rgba(0,200,255,0.7)' }} />
             Just Dropped
           </p>
           <h2 className="mt-3 font-display font-extrabold leading-[1.05]" style={{ fontSize: 'clamp(34px, 4.5vw, 54px)', letterSpacing: '-1.6px' }}>
@@ -53,13 +53,13 @@ export function NewArrivals({ products }: NewArrivalsProps) {
         <Link
           href="/shop"
           data-cursor="interactive"
-          className="inline-flex items-center gap-2 font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)] hover:text-[var(--white)] transition-colors duration-150"
+          className="inline-flex items-center gap-2 font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)] transition-colors duration-150 hover:text-[var(--white)]"
         >
-          View All <ArrowRight className="w-4 h-4" />
+          View All <ArrowRight className="h-4 w-4" />
         </Link>
-      </div>
+      </RevealItem>
 
-      <div data-reveal-child className="mb-8">
+      <RevealItem className="mb-8">
         <div className="flex flex-wrap gap-2">
           {TABS.map((tab) => (
             <button
@@ -67,7 +67,7 @@ export function NewArrivals({ products }: NewArrivalsProps) {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               data-cursor="interactive"
-              className="px-4 py-2 rounded-full border font-sans text-[12px] font-semibold uppercase tracking-[0.18em] transition-all duration-200"
+              className="rounded-full border px-4 py-2 font-sans text-[12px] font-semibold uppercase tracking-[0.18em] transition-all duration-200"
               style={{
                 color: activeTab === tab.id ? 'var(--white)' : 'rgba(238,242,255,0.72)',
                 background: activeTab === tab.id ? 'linear-gradient(135deg, var(--blue), var(--blue-mid))' : 'rgba(6,18,50,0.45)',
@@ -80,13 +80,13 @@ export function NewArrivals({ products }: NewArrivalsProps) {
             </button>
           ))}
         </div>
-      </div>
+      </RevealItem>
 
-      <div data-reveal-child className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <RevealItem className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
         {filtered.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.id} product={product} storefrontGlass density="slim" landingShine />
         ))}
-      </div>
-    </section>
+      </RevealItem>
+    </SectionReveal>
   );
 }

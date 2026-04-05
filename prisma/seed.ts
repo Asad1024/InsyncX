@@ -5,20 +5,28 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@insyncx.store';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL ?? 'admin@insyncx.store').trim().toLowerCase();
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'Admin@123456';
 
 async function main() {
   const salt = await bcrypt.genSalt(12);
+  const adminPasswordHash = await bcrypt.hash(ADMIN_PASSWORD, salt);
 
-  // ── 1. Admin user ──
+  // ── 1. Admin user (update path resets password/role so Google-first signups at this email can sign in) ──
   const admin = await prisma.user.upsert({
     where: { email: ADMIN_EMAIL },
-    update: {},
+    update: {
+      password: adminPasswordHash,
+      role: UserRole.ADMIN,
+      name: 'InsyncX Admin',
+      isBanned: false,
+      needsPassword: false,
+      authProvider: 'credentials',
+    },
     create: {
       name: 'InsyncX Admin',
       email: ADMIN_EMAIL,
-      password: await bcrypt.hash(ADMIN_PASSWORD, salt),
+      password: adminPasswordHash,
       role: UserRole.ADMIN,
     },
   });
@@ -44,6 +52,8 @@ async function main() {
 
   // ── 3. Categories (with images for Shop by Category section) ──
   const categoriesData = [
+    { name: 'Athleisure',  slug: 'athleisure',  icon: 'Activity',      image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=60' },
+    { name: 'Beauty & care', slug: 'beauty',    icon: 'Sparkles',      image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=60' },
     { name: 'Men',          slug: 'men',         icon: 'Shirt',         image: 'https://plus.unsplash.com/premium_photo-1755901267835-6bcb4de846a3?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8TWVuJTIwZWNvbW1lcmNlJTIwcGljc3xlbnwwfHwwfHx8MA%3D%3D' },
     { name: 'Women',       slug: 'women',       icon: 'Sparkles',      image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&q=80' },
     { name: 'LGBTQ+',      slug: 'lgbtq',       icon: 'Heart',         image: 'https://images.squarespace-cdn.com/content/v1/5f4cd040d1fbe943c7a863d0/1692165273836-KZBN5CQODUUF19VVN36P/MV-MI3A8255-1024x683_2100x.jpeg' },

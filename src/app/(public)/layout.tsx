@@ -5,8 +5,6 @@ import { MobileDrawer } from '@/components/storefront/MobileDrawer';
 import { DisplaySettingsProvider } from '@/context/display-settings';
 import { getCategories, getApprovedStores } from '@/actions/product.actions';
 import { getPlatformDisplaySettings } from '@/lib/platform-settings';
-import { InsyncUX } from '@/components/storefront/InsyncUX';
-
 export default async function PublicLayout({
   children,
 }: {
@@ -25,7 +23,6 @@ export default async function PublicLayout({
   return (
     <DisplaySettingsProvider value={displaySettings}>
       <div className="min-h-screen bg-background" suppressHydrationWarning>
-        <InsyncUX />
         <Navbar categories={categories} stores={stores} />
         <main className="pt-[var(--nav-h)]">{children}</main>
         <CartSidebar />

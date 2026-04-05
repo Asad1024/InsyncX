@@ -33,7 +33,7 @@ export function WishlistCard({ product, userId }: WishlistCardProps) {
   return (
     <div className="relative group">
       <div
-        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center border cursor-pointer transition-colors duration-150 hover:bg-[rgba(239,68,68,0.1)] hover:text-[var(--red)]"
+        className="absolute right-3 top-3 z-30 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border transition-colors duration-150 hover:bg-[rgba(239,68,68,0.12)] hover:text-[var(--red)]"
         style={{
           background: 'rgba(9,9,11,0.8)',
           borderColor: 'var(--line)',
@@ -52,7 +52,7 @@ export function WishlistCard({ product, userId }: WishlistCardProps) {
           <X className="w-3.5 h-3.5" />
         )}
       </div>
-      <ProductCard product={product} />
+      <ProductCard product={product} shopVisual />
     </div>
   );
 }

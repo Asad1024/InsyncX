@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { useUIStore } from '@/store/ui.store';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { useDebounce } from '@/hooks/useDebounce';
 import { searchProducts, getCategoriesWithProducts } from '@/actions/product.actions';
 import Link from 'next/link';
@@ -49,6 +50,8 @@ export function SearchOverlay() {
     }
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [searchOpen, setSearchOpen]);
+
+  useBodyScrollLock(searchOpen);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

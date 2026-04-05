@@ -2,50 +2,84 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
-import { CheckCircle, Store, Shield, Heart, LayoutDashboard, Package, Tag, Star } from 'lucide-react';
+import {
+  CheckCircle,
+  Store,
+  Shield,
+  Heart,
+  LayoutDashboard,
+  Package,
+  Tag,
+  Star,
+} from 'lucide-react';
+import { AuthParticleCanvas } from '@/components/auth/AuthParticleCanvas';
 
-// Same hero images — change every 3s
 const AUTH_BG_IMAGES = [
   'https://plus.unsplash.com/premium_photo-1664537981586-e550b3bd9872?w=1920&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1544441893-675973e31985?w=1920&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1543087903-1ac2ec7aa8c5?w=1920&auto=format&fit=crop&q=80',
   'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1620226346750-3aea895ac33f?w=1920&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1589363460779-cd717d2ed8fa?w=1920&auto=format&fit=crop&q=80',
-  'https://plus.unsplash.com/premium_photo-1708633003240-569a6135deaa?w=1920&auto=format&fit=crop&q=80',
-  'https://plus.unsplash.com/premium_photo-1682435561654-20d84cef00eb?w=1920&auto=format&fit=crop&q=80',
 ];
 
 const LOGIN_CONTENT = {
   headline: 'Welcome back.',
   tagline: "We're glad to see you again.",
-  body: 'Sign in to access your account—track orders, manage your store, or continue shopping where you left off.',
-  body2: null as string | null,
   features: [
-    { icon: Package, title: 'Your orders', subtitle: 'Track and manage your purchases' },
+    { icon: Package, title: 'Your Orders', subtitle: 'Track and manage your purchases' },
     { icon: Heart, title: 'Wishlist', subtitle: 'Save items and get back to them anytime' },
-    { icon: LayoutDashboard, title: 'Vendor dashboard', subtitle: 'Manage products and orders if you sell' },
+    { icon: LayoutDashboard, title: 'Vendor Dashboard', subtitle: 'Manage products and orders if you sell' },
   ],
 };
 
 const REGISTER_CONTENT = {
-  headline: 'Join InsyncX.',
   tagline: 'One account. Shop or sell.',
   body: 'Create an account to browse curated fashion, buy from trusted vendors, or open your own store and start selling.',
-  body2: 'Free to join. No hidden fees. Add payment details only when you’re ready to buy or receive payouts as a vendor.',
   features: [
     { icon: CheckCircle, title: 'Curated products', subtitle: '500+ items from trusted vendors' },
     { icon: Store, title: 'Sell with us', subtitle: 'Open your store in minutes' },
     { icon: Shield, title: 'Secure checkout', subtitle: 'Safe payments & buyer protection' },
-    { icon: Tag, title: 'Exclusive offers', subtitle: 'Member-only deals and early access to sales' },
+    { icon: Tag, title: 'Exclusive offers', subtitle: 'Member-only deals and early access' },
   ],
 };
+
+function StatCell({
+  target,
+  suffix,
+  label,
+}: {
+  target: number;
+  suffix: string;
+  label: string;
+}) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    const dur = 1600;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const u = Math.min(1, (now - t0) / dur);
+      const eased = 1 - (1 - u) ** 3;
+      setN(Math.round(target * eased));
+      if (u < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [target]);
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center border-r border-[var(--border)] py-4 last:border-r-0">
+      <span className="font-display text-[20px] font-bold leading-none text-gradient-insync">
+        {n}
+        {suffix}
+      </span>
+      <span className="mt-1.5 font-sans text-[10.5px] font-medium uppercase tracking-wider text-[var(--muted)]">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 export function AuthLeftPanel() {
   const pathname = usePathname();
   const isLogin = pathname === '/auth/login';
-  const content = isLogin ? LOGIN_CONTENT : REGISTER_CONTENT;
   const [bgIndex, setBgIndex] = useState(0);
 
   useEffect(() => {
@@ -55,14 +89,10 @@ export function AuthLeftPanel() {
     return () => clearInterval(id);
   }, []);
 
+  const loginDelays = ['0.1s', '0.25s', '0.4s'];
+
   return (
-    <div
-      className="auth-left-panel hidden lg:flex flex-col justify-between pt-8 pb-12 px-14 relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(165deg, var(--surface) 0%, var(--surface2) 50%, #0f0f12 100%)',
-      }}
-    >
-      {/* Background images — same as hero, change every 3s */}
+    <div className="auth-left-panel relative hidden min-h-0 flex-col justify-between overflow-hidden px-10 pb-12 pt-10 lg:flex lg:px-14">
       <div className="absolute inset-0">
         {AUTH_BG_IMAGES.map((src, i) => (
           // eslint-disable-next-line @next/next/no-img-element
@@ -70,7 +100,7 @@ export function AuthLeftPanel() {
             key={src}
             src={src}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700 pointer-events-none"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700"
             style={{
               opacity: i === bgIndex ? 1 : 0,
               zIndex: i === bgIndex ? 0 : -1,
@@ -80,181 +110,139 @@ export function AuthLeftPanel() {
             decoding="async"
           />
         ))}
-        {/* Lighter overlay so background images show through */}
-        <div
-          className="absolute inset-0 z-[1] pointer-events-none"
-          style={{
-            background: 'linear-gradient(165deg, rgba(9,9,11,0.72) 0%, rgba(15,15,18,0.68) 50%, rgba(9,9,11,0.78) 100%)',
-          }}
-          aria-hidden
-        />
       </div>
+
+      <AuthParticleCanvas className="absolute inset-0 z-[1]" />
+
       <div
-        className="absolute inset-0 pointer-events-none auth-gradient-shift z-[2]"
+        className="pointer-events-none absolute inset-0 z-[2]"
         style={{
-          background: 'radial-gradient(ellipse 80% 50% at 20% 40%, rgba(74,144,226,0.08) 0%, transparent 50%)',
+          background:
+            'radial-gradient(ellipse 90% 70% at 50% 45%, rgba(2,10,24,0.55) 0%, rgba(2,10,24,0.82) 55%, rgba(2,10,24,0.88) 100%)',
         }}
         aria-hidden
       />
-      {/* Logo anchored top-left so both panels show the brand */}
-      <div className={`relative z-10 w-full flex justify-start ${isLogin ? 'mb-6' : 'mb-2'}`}>
-        <div className="relative shrink-0" style={{ width: 220, height: 56 }}>
-          <Image
-            src="/InsyncX%20logo.avif"
-            alt="InsyncX"
-            fill
-            className="object-contain object-left"
-            sizes="220px"
-            priority
-          />
-        </div>
-      </div>
-      <div className={`relative z-10 flex-1 flex flex-col justify-center min-h-0 ${isLogin ? '-mt-2' : ''}`}>
-        <h1
-          className="font-display text-[42px] lg:text-[48px] font-light leading-[1.15] tracking-tight text-white opacity-0 auth-fade-in-up"
-          style={{ animationDelay: '0.15s', animationFillMode: 'forwards', fontWeight: 700 }}
-        >
-          {content.headline.includes('InsyncX') ? (
-            <>
-              {content.headline.split('InsyncX')[0]}
-              <span className="font-semibold">Insync</span>
-              <span style={{ color: '#4a90e2' }}>X</span>
-              {content.headline.split('InsyncX')[1] ?? ''}
-            </>
-          ) : (
-            content.headline
-          )}
-        </h1>
-        <p
-          className="font-display text-xl italic mt-4 text-white/90 opacity-0 auth-fade-in-up"
-          style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}
-        >
-          {content.tagline}
-        </p>
-        <p
-          className="font-sans text-[15px] mt-6 max-w-[340px] leading-relaxed text-white/80 opacity-0 auth-fade-in-up"
-          style={{ animationDelay: '0.45s', animationFillMode: 'forwards', fontWeight: 400 }}
-        >
-          {content.body}
-        </p>
-        {content.body2 && (
-          <p
-            className="font-sans text-[13px] mt-4 max-w-[340px] leading-relaxed text-white/70 opacity-0 auth-fade-in-up"
-            style={{ animationDelay: '0.55s', animationFillMode: 'forwards' }}
-          >
-            {content.body2}
-          </p>
-        )}
 
-        {/* Register only: stats bar */}
-        {!isLogin && (
-          <div
-            className="flex flex-row opacity-0 auth-fade-in-up mt-5 max-w-[340px] rounded-xl border backdrop-blur-[12px]"
-            style={{
-              animationDelay: '0.6s',
-              animationFillMode: 'forwards',
-              background: 'rgba(255,255,255,0.03)',
-              borderColor: 'rgba(255,255,255,0.07)',
-            }}
-          >
-            {[
-              { num: '50K+', label: 'Members' },
-              { num: '500+', label: 'Vendors' },
-              { num: '10K+', label: 'Products' },
-            ].map((stat, idx) => (
-              <div
-                key={stat.label}
-                className="flex-1 flex flex-col items-center justify-center py-4 px-3.5 border-r last:border-r-0 border-white/7"
-                style={{ borderRightColor: idx < 2 ? 'rgba(255,255,255,0.07)' : 'transparent' }}
-              >
-                <span className="font-display font-bold text-[20px]" style={{ color: '#4a90e2' }}>{stat.num}</span>
-                <span className="font-sans text-[10.5px] mt-0.5 text-white/60" style={{ fontWeight: 300 }}>{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Register only: testimonial card */}
-        {!isLogin && (
-          <div
-            className="opacity-0 auth-fade-in-up mt-4 max-w-[340px] rounded-[11px] border p-4 backdrop-blur-md relative"
-            style={{
-              animationDelay: '0.7s',
-              animationFillMode: 'forwards',
-              background: 'rgba(255,255,255,0.035)',
-              borderColor: 'rgba(255,255,255,0.07)',
-            }}
-          >
-            <span className="font-display block text-[40px] leading-none -mt-1 -ml-0.5" style={{ color: 'rgba(74,144,226,0.2)' }}>&ldquo;</span>
-            <p className="font-sans text-[13px] italic leading-relaxed text-white/70 -mt-4" style={{ fontWeight: 300, lineHeight: 1.6 }}>
-              Opened my store in under 10 minutes. First sale came the same week.
-            </p>
-            <div className="flex items-center gap-3 mt-3">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-display text-[11px] font-bold" style={{ background: 'var(--surface3)', color: '#4a90e2' }}>AR</div>
-              <div className="flex-1 min-w-0">
-                <p className="font-sans text-[12px] font-medium text-white truncate">Aisha R.</p>
-                <p className="font-sans text-[11px] text-white/60">Verified vendor · Lagos</p>
-              </div>
-              <div className="flex gap-0.5 shrink-0">
-                {[1,2,3,4,5].map((i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-[#4a90e2]" style={{ color: '#4a90e2' }} />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Feature cards: login = 3 stacked, register = 2×2 grid */}
-        <div
-          className={`relative z-10 mt-6 ${isLogin ? 'flex flex-col gap-3 max-w-[320px]' : 'grid grid-cols-2 gap-2 max-w-[340px]'}`}
-        >
-          {content.features.map((item, i) => (
-            <div
-              key={item.title}
-              className="opacity-0 auth-card-entrance w-full"
-              style={{
-                animationDelay: `${isLogin ? 0.6 + i * 0.12 : 0.8 + i * 0.08}s`,
-                animationFillMode: 'forwards',
-              }}
+      <div className={`relative z-10 flex min-h-0 flex-1 flex-col justify-center ${isLogin ? '-mt-2' : ''}`}>
+        {isLogin ? (
+          <>
+            <h1
+              className="font-display text-[42px] font-black leading-[1.12] tracking-tight text-white lg:text-[52px]"
+              style={{ fontWeight: 900 }}
             >
-              <div
-                className="auth-feature-card flex items-center gap-3 rounded-[11px] border transition-all duration-300 auth-card-funky hover:scale-[1.02] backdrop-blur-md"
-                style={{
-                  background: 'rgba(255,255,255,0.035)',
-                  borderColor: 'rgba(255,255,255,0.07)',
-                  padding: isLogin ? '14px 16px' : '12px 10px',
-                }}
-              >
+              {LOGIN_CONTENT.headline}
+            </h1>
+            <p className="mt-4 max-w-[360px] font-sans text-xl italic text-[var(--muted)]">
+              {LOGIN_CONTENT.tagline}
+            </p>
+            <div className="mt-8 flex max-w-[320px] flex-col gap-3">
+              {LOGIN_CONTENT.features.map((item, i) => (
                 <div
-                  className="shrink-0 flex items-center justify-center rounded-lg transition-transform duration-300"
+                  key={item.title}
+                  className="auth-feat-card rounded-[12px] border border-[var(--border)] bg-[var(--card-bg)] p-4 backdrop-blur-[20px] transition-all duration-300 ease-out hover:border-[var(--cyan)] hover:shadow-[0_0_20px_rgba(0,200,255,0.15)]"
+                  style={{ animationDelay: loginDelays[i] }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                      style={{
+                        background: 'rgba(29,110,255,0.2)',
+                        boxShadow: '0 0 18px rgba(29,110,255,0.35)',
+                      }}
+                    >
+                      <item.icon className="h-[18px] w-[18px] text-[var(--blue)]" strokeWidth={2} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-sans text-[13px] font-semibold text-white">{item.title}</p>
+                      <p className="mt-0.5 font-sans text-[12px] text-[var(--muted)]">{item.subtitle}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <h1
+              className="font-display text-[42px] font-black leading-[1.12] tracking-tight text-white lg:text-[48px]"
+              style={{ fontWeight: 900 }}
+            >
+              Join <span className="text-gradient-insync">InsyncX</span>.
+            </h1>
+            <p className="mt-4 max-w-[360px] font-sans text-xl italic text-[var(--muted)]">{REGISTER_CONTENT.tagline}</p>
+            <p className="mt-4 max-w-[360px] font-sans text-[15px] leading-relaxed text-[var(--muted)]">
+              {REGISTER_CONTENT.body}
+            </p>
+
+            <div
+              className="auth-feat-card mt-6 flex max-w-[360px] flex-row overflow-hidden rounded-[12px] border border-[var(--border)] bg-[var(--card-bg)] backdrop-blur-[20px]"
+              style={{ animationDelay: '0.2s' }}
+            >
+              <StatCell target={50} suffix="K+" label="Members" />
+              <StatCell target={500} suffix="+" label="Vendors" />
+              <StatCell target={10} suffix="K+" label="Products" />
+            </div>
+
+            <div
+              className="auth-feat-card relative mt-4 max-w-[360px] rounded-[12px] border border-[var(--border)] bg-[var(--card-bg)] p-4 backdrop-blur-[20px]"
+              style={{ animationDelay: '0.5s' }}
+            >
+              <span className="font-display -ml-0.5 -mt-1 block text-[40px] leading-none text-[var(--blue)]/25">
+                &ldquo;
+              </span>
+              <p className="-mt-4 font-sans text-[13px] font-light italic leading-relaxed text-[var(--muted)]">
+                Opened my store in under 10 minutes. First sale came the same week.
+              </p>
+              <div className="mt-3 flex items-center gap-3">
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-[11px] font-bold text-gradient-insync"
                   style={{
-                    width: isLogin ? 34 : 30,
-                    height: isLogin ? 34 : 30,
-                    background: 'rgba(74,144,226,0.10)',
-                    border: '1px solid rgba(74,144,226,0.15)',
+                    background: 'linear-gradient(135deg, rgba(29,110,255,0.35), rgba(0,200,255,0.2))',
                   }}
                 >
-                  <item.icon className="w-[18px] h-[18px]" style={{ color: '#4a90e2' }} />
+                  AR
                 </div>
-                <div className="min-w-0">
-                  <p className="font-sans font-medium text-white" style={{ fontSize: isLogin ? 13 : 12 }}>
-                    {item.title}
-                  </p>
-                  <p className="font-sans text-white/70 mt-0.5" style={{ fontSize: isLogin ? 12 : 11 }}>
-                    {item.subtitle}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-sans text-[12px] font-medium text-white">Aisha R.</p>
+                  <p className="font-sans text-[11px] text-[var(--muted)]">Verified vendor · Lagos</p>
+                </div>
+                <div className="flex shrink-0 gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="h-3.5 w-3.5 fill-[#4da6ff]" style={{ color: '#4da6ff' }} />
+                  ))}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="relative z-10 mt-6 grid max-w-[360px] grid-cols-2 gap-2">
+              {REGISTER_CONTENT.features.map((item, i) => (
+                <div
+                  key={item.title}
+                  className="auth-feat-card rounded-[12px] border border-[var(--border)] bg-[var(--card-bg)] p-3 backdrop-blur-[20px] transition-all duration-300 ease-out hover:border-[var(--cyan)] hover:shadow-[0_0_20px_rgba(0,200,255,0.12)]"
+                  style={{ animationDelay: `${0.65 + i * 0.08}s` }}
+                >
+                  <div
+                    className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full"
+                    style={{
+                      background: 'rgba(29,110,255,0.2)',
+                      boxShadow: '0 0 14px rgba(29,110,255,0.3)',
+                    }}
+                  >
+                    <item.icon className="h-4 w-4 text-[var(--blue)]" strokeWidth={2} />
+                  </div>
+                  <p className="text-center font-sans text-[12px] font-semibold text-white">{item.title}</p>
+                  <p className="mt-0.5 text-center font-sans text-[11px] text-[var(--muted)]">{item.subtitle}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      <p
-        className="relative z-10 font-sans text-[12px] mt-6 text-white/60 opacity-0 auth-fade-in-up"
-        style={{ animationDelay: '1s', animationFillMode: 'forwards' }}
-      >
-        © 2025 <span className="font-semibold">Insync</span><span style={{ color: 'var(--gold)' }}>X</span>. All rights reserved.
+      <p className="relative z-10 mt-8 font-sans text-[12px] text-[var(--muted)]">
+        © {new Date().getFullYear()}{' '}
+        <span className="font-semibold text-white">Insync</span>
+        <span className="text-gradient-insync">X</span>. All rights reserved.
       </p>
     </div>
   );

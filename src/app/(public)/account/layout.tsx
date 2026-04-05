@@ -21,19 +21,18 @@ export default async function AccountLayout({
     dbUser?.avatar ?? (session.user as { image?: string | null }).image ?? null;
 
   return (
-    <div
-      className="min-h-[calc(100vh-64px)] grid grid-cols-1 md:grid-cols-[var(--account-w)_1fr] max-w-[var(--content-max)] mx-auto"
-      style={{ minHeight: 'calc(100vh - 64px)' }}
-    >
-      <AccountSidebar
-        user={{
-          name: session.user.name ?? null,
-          email: session.user.email ?? null,
-          role: session.user.role,
-          image,
-        }}
-      />
-      <main className="flex-1 overflow-auto">{children}</main>
+    <div className="account-dashboard-bg min-h-[calc(100vh-var(--nav-h))]">
+      <div className="relative z-[1] mx-auto flex min-h-[calc(100vh-var(--nav-h))] max-w-[var(--content-max)] flex-col md:grid md:min-h-[calc(100vh-var(--nav-h))] md:grid-cols-[var(--account-w)_1fr]">
+        <AccountSidebar
+          user={{
+            name: session.user.name ?? null,
+            email: session.user.email ?? null,
+            role: session.user.role,
+            image,
+          }}
+        />
+        <main className="min-h-0 min-w-0 flex-1 overflow-auto">{children}</main>
+      </div>
     </div>
   );
 }

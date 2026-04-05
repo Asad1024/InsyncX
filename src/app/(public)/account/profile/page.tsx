@@ -9,17 +9,10 @@ export default async function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="py-10 px-12" style={{ padding: '40px 48px' }}>
-      <header className="mb-10">
-        <h1
-          className="font-display text-[40px] font-light"
-          style={{ color: 'var(--text)' }}
-        >
-          Profile
-        </h1>
-        <p className="font-sans text-[13px] mt-0" style={{ color: 'var(--text-3)' }}>
-          Manage your personal information
-        </p>
+    <div className="px-4 py-8 md:px-8 lg:px-10 xl:px-12">
+      <header className="mb-8 md:mb-10">
+        <h1 className="account-name-gradient text-[clamp(28px,5vw,44px)] leading-tight">Profile</h1>
+        <p className="mt-1 font-sans text-[13px] text-[var(--muted)]">Manage your personal information</p>
       </header>
 
       <ProfileForm

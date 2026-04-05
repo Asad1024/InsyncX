@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 
 export function FooterCTA() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -46,7 +48,7 @@ export function FooterCTA() {
       ctx.clearRect(0, 0, w, h);
 
       // subtle particle field
-      for (let i = 0; i < 110; i++) {
+      for (let i = 0; i < 48; i++) {
         const x = ((i * 131.1 + t * 18) % w + w) % w;
         const y = ((i * 93.7 + t * 12) % h + h) % h;
         const r = 0.8 + Math.sin(t + i) * 0.5;
@@ -70,7 +72,7 @@ export function FooterCTA() {
   }, []);
 
   return (
-    <section data-reveal className="relative overflow-hidden text-center" style={{ padding: '160px 0' }}>
+    <SectionReveal stagger className="relative overflow-hidden text-center" style={{ padding: '48px 0 32px' }}>
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-50" />
       <div
         className="absolute inset-0"
@@ -81,23 +83,23 @@ export function FooterCTA() {
         }}
       />
 
-      <div data-reveal-child className="relative z-[2] px-6 md:px-10 lg:px-12">
-        <h2 className="font-display font-black leading-[0.95]" style={{ fontSize: 'clamp(52px, 9vw, 130px)', letterSpacing: '-3px' }}>
+      <RevealItem className="relative z-[2] px-6 md:px-10 lg:px-12">
+        <h2 className="font-display font-black leading-[0.95]" style={{ fontSize: 'clamp(36px, 7vw, 72px)', letterSpacing: '-2px' }}>
           WANT TO
           <br />
           <span className="insync-gradient-text">SELL HERE?</span>
         </h2>
-        <p className="mt-8 font-sans text-[15px] font-light leading-[1.7]" style={{ color: 'var(--muted)' }}>
+        <p className="mt-5 font-sans text-[14px] font-light leading-[1.7]" style={{ color: 'var(--muted)' }}>
           Join vendors already making money on INSYNC.
           <br />
           Setup in minutes. Full support.
         </p>
 
-        <Link href="/vendor" data-cursor="interactive" className="btn btn-primary mt-10 inline-flex" style={{ padding: '18px 54px' }}>
+        <Link href="/vendor" data-cursor="interactive" className="btn btn-primary mt-6 inline-flex" style={{ padding: '14px 40px' }}>
           Become a Vendor →
         </Link>
-      </div>
-    </section>
+      </RevealItem>
+    </SectionReveal>
   );
 }
 

@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 import { useUIStore } from '@/store/ui.store';
 import { useSession, signOut } from 'next-auth/react';
-import { X, Home, ShoppingBag, Star, LayoutGrid, LayoutDashboard, ShoppingCart, Heart } from 'lucide-react';
+import { X, ShoppingBag, Star, LayoutGrid, LayoutDashboard, ShoppingCart, Heart } from 'lucide-react';
 
 const MENU_LINKS = [
-  { label: 'Home', href: '/', icon: Home },
   { label: 'Shop', href: '/shop', icon: ShoppingBag },
   { label: 'New Arrivals', href: '/shop?new=1', icon: Star },
   { label: 'Featured', href: '/shop?featured=1', icon: Star },
@@ -34,6 +34,8 @@ const ACCOUNT_LINKS = [
 export function MobileDrawer() {
   const { mobileMenuOpen, setMobileMenuOpen } = useUIStore();
   const { data: session, status } = useSession();
+
+  useBodyScrollLock(mobileMenuOpen);
 
   if (!mobileMenuOpen) return null;
 

@@ -63,17 +63,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
+        const email = (credentials.email as string).trim().toLowerCase();
+        const password = (credentials.password as string).trim();
+        if (!email || !password) return null;
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
           include: {
             storesOwned: { take: 1, where: { isActive: true } },
           },
         });
         if (!user || user.isBanned) return null;
-        const valid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+        const valid = await bcrypt.compare(password, user.password);
         if (!valid) return null;
         const storeId = user.storesOwned[0]?.id ?? null;
         return {

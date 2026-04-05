@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useRef, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -16,6 +16,16 @@ function LoginPageContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (!error) return;
+    const f = formRef.current;
+    if (!f) return;
+    f.classList.remove('insync-shake');
+    void f.offsetWidth;
+    f.classList.add('insync-shake');
+  }, [error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,33 +66,28 @@ function LoginPageContent() {
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="font-display text-[30px] sm:text-[32px] font-bold" style={{ color: 'var(--text)' }}>
+      <div className="auth-stagger-fade mb-8" style={{ animationDelay: '0.1s' }}>
+        <h1 className="font-display text-[36px] font-bold leading-tight text-white" style={{ fontWeight: 700 }}>
           Sign in
         </h1>
-        <p className="text-[14px] mt-2 font-normal" style={{ color: 'var(--text-3)', fontWeight: 400 }}>
+        <p className="mt-2 font-sans text-[14px] font-normal text-[var(--muted)]">
           Enter your email and password to continue
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-0">
         {error && (
           <div
-            className="flex items-center gap-2.5 rounded-xl px-4 py-3 border"
-            style={{
-              background: 'var(--red-bg)',
-              borderColor: 'rgba(239,68,68,0.25)',
-            }}
+            className="auth-stagger-fade mb-5 flex items-center gap-2.5 rounded-[10px] border border-[rgba(255,77,77,0.35)] px-4 py-3"
+            style={{ animationDelay: '0.15s', background: 'rgba(255,77,77,0.08)' }}
           >
-            <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--red)' }} />
-            <span className="text-[13px]" style={{ color: 'var(--red)' }}>
-              {error}
-            </span>
+            <AlertCircle className="h-4 w-4 shrink-0 text-[#ff6b6b]" />
+            <span className="auth-error-text m-0">{error}</span>
           </div>
         )}
 
-        <div className="input-group">
-          <label htmlFor="email" className="input-label">
+        <div className="auth-stagger-fade input-group" style={{ animationDelay: '0.3s' }}>
+          <label htmlFor="email" className="insync-field-label">
             Email address
           </label>
           <input
@@ -96,8 +101,8 @@ function LoginPageContent() {
           />
         </div>
 
-        <div className="input-group">
-          <label htmlFor="password" className="input-label">
+        <div className="auth-stagger-fade input-group" style={{ animationDelay: '0.4s' }}>
+          <label htmlFor="password" className="insync-field-label">
             Password
           </label>
           <div className="relative">
@@ -113,61 +118,55 @@ function LoginPageContent() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors hover:bg-white/5"
-              style={{ color: 'var(--text-4)' }}
+              className={`absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg border-0 bg-transparent transition-all duration-200 ease-out hover:bg-[var(--glass)] ${
+                showPassword ? 'text-[var(--cyan)]' : 'text-[var(--muted)]'
+              }`}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <div className="flex justify-end mt-2">
+          <div className="mt-2 flex justify-end">
             <Link
               href="/auth/forgot-password"
-              className="text-[12px] transition-colors hover:underline"
-              style={{ color: 'var(--gold)' }}
+              className="font-sans text-[12px] text-[var(--cyan)] transition-all duration-200 ease-out hover:underline"
             >
               Forgot password?
             </Link>
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="auth-submit-btn w-full py-4 text-[14px] border-0 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Signing in…
-            </>
-          ) : (
-            'Sign in'
-          )}
-        </button>
+        <div className="auth-stagger-fade pt-2" style={{ animationDelay: '0.5s' }}>
+          <button
+            type="submit"
+            className="auth-submit-btn flex w-full items-center justify-center gap-2 border-0 px-4 py-4 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Signing in…
+              </>
+            ) : (
+              'Sign in'
+            )}
+          </button>
+        </div>
       </form>
 
-      <div className="flex items-center gap-4 my-8">
-        <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
-        <span className="text-[12px]" style={{ color: 'var(--text-4)' }}>
-          or
-        </span>
-        <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
+      <div className="auth-stagger-fade my-8 flex items-center gap-4" style={{ animationDelay: '0.52s' }}>
+        <div className="h-px flex-1 bg-[var(--border)]" />
+        <span className="font-sans text-[12px] text-[var(--muted)]">or</span>
+        <div className="h-px flex-1 bg-[var(--border)]" />
       </div>
 
-      <GoogleSignInButton callbackUrl={callbackUrl} onConfigError={(m) => setError(m)} />
+      <div className="auth-stagger-fade" style={{ animationDelay: '0.54s' }}>
+        <GoogleSignInButton callbackUrl={callbackUrl} onConfigError={(m) => setError(m)} />
+      </div>
 
-      <p className="text-center text-[13px] mt-8" style={{ color: 'var(--text-3)' }}>
+      <p className="auth-stagger-fade mt-8 text-center font-sans text-[13px] text-[var(--muted)]" style={{ animationDelay: '0.56s' }}>
         Don&apos;t have an account?{' '}
-        <Link
-          href="/auth/register"
-          className="font-medium hover:underline transition-colors"
-          style={{ color: 'var(--gold)' }}
-        >
+        <Link href="/auth/register" className="font-medium text-[var(--cyan)] transition-all duration-200 hover:underline">
           Create one
         </Link>
       </p>
@@ -179,7 +178,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[240px] flex items-center justify-center font-sans text-[14px] text-[var(--text-3)]">
+        <div className="flex min-h-[240px] items-center justify-center font-sans text-[14px] text-[var(--muted)]">
           Loading…
         </div>
       }

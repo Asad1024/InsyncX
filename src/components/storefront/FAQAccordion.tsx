@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Plus, ArrowRight } from 'lucide-react';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 
 const FAQ_ITEMS = [
   {
@@ -43,13 +45,13 @@ export function FAQAccordion() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section
-      data-reveal
-      data-reveal-stagger="1"
-      className="py-[100px] px-6 md:px-10 lg:px-12 bg-[var(--bg)] border-t"
+    <SectionReveal
+      id="faq"
+      stagger
+      className="border-t bg-[var(--bg)] px-6 py-[100px] md:px-10 lg:px-12 scroll-mt-[calc(var(--nav-h)+1rem)]"
       style={{ borderColor: 'rgba(29,110,255,0.15)' }}
     >
-      <div data-reveal-child className="max-w-[860px] mx-auto text-center mb-12">
+      <RevealItem className="mx-auto mb-12 max-w-[860px] text-center">
         <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.22em] text-[var(--cyan)] inline-flex items-center gap-3 justify-center">
           <span className="inline-block w-7 h-px" style={{ background: 'rgba(0,200,255,0.7)' }} />
           FAQ
@@ -62,7 +64,7 @@ export function FAQAccordion() {
             Can&apos;t find an answer?{' '}
           </span>
           <Link
-            href="#"
+            href="/support"
             data-cursor="interactive"
             className="inline-flex items-center gap-2 font-sans text-[12px] font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--cyan)' }}
@@ -70,9 +72,9 @@ export function FAQAccordion() {
             Contact Us <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </p>
-      </div>
+      </RevealItem>
 
-      <div data-reveal-child className="flex flex-col max-w-[860px] mx-auto">
+      <RevealItem className="mx-auto flex max-w-[860px] flex-col">
         {FAQ_ITEMS.map((item, index) => {
           const isOpen = openIndex === index;
           return (
@@ -130,7 +132,7 @@ export function FAQAccordion() {
             </div>
           );
         })}
-      </div>
-    </section>
+      </RevealItem>
+    </SectionReveal>
   );
 }

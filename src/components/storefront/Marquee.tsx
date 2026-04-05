@@ -1,6 +1,8 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { useDisplaySettings } from '@/context/display-settings';
+import { homeViewport, sectionRevealVariants } from '@/lib/motion';
 import { formatPrice } from '@/lib/utils';
 
 interface MarqueeProps {
@@ -13,7 +15,7 @@ function MarqueeRow({ items, reverse }: { items: string[]; reverse?: boolean }) 
     <div
       className="flex items-center w-max shrink-0"
       style={{
-        animation: reverse ? 'marqueeRight 24s linear infinite' : 'marqueeLeft 24s linear infinite',
+        animation: reverse ? 'marqueeRight 28s linear infinite' : 'marqueeLeft 28s linear infinite',
       }}
     >
       {duplicated.map((item, i) => (
@@ -41,20 +43,20 @@ export function Marquee({ items }: MarqueeProps) {
   const combined = [...(items.length ? items : ['Collections']), ...bannerItems].map((s) => s.toUpperCase());
 
   return (
-    <section
-      data-reveal
-      className="overflow-hidden flex flex-col"
+    <motion.section
+      className="flex overflow-hidden py-4 md:py-5"
       style={{
-        minHeight: 72,
+        minHeight: 56,
         background: 'linear-gradient(90deg, var(--blue-mid), var(--blue))',
       }}
+      initial="hidden"
+      whileInView="visible"
+      viewport={homeViewport}
+      variants={sectionRevealVariants}
     >
-      <div className="flex-1 w-full overflow-hidden flex items-center border-b" style={{ borderBottomColor: 'rgba(255,255,255,0.14)' }}>
+      <div className="flex w-full min-h-[44px] items-center overflow-hidden">
         <MarqueeRow items={combined} reverse={false} />
       </div>
-      <div className="flex-1 w-full overflow-hidden flex items-center">
-        <MarqueeRow items={combined} reverse />
-      </div>
-    </section>
+    </motion.section>
   );
 }

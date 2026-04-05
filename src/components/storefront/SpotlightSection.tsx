@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef } from 'react';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 import type { Product, Store, Category } from '@prisma/client';
 import { formatPrice, getFirstProductImage } from '@/lib/utils';
 import { useDisplaySettings } from '@/context/display-settings';
@@ -13,10 +15,10 @@ type ProductWithRelations = Product & {
 
 export function SpotlightSection({ product }: { product: ProductWithRelations | null }) {
   const { currencySymbol } = useDisplaySettings();
-  const sectionRef = useRef<HTMLElement>(null);
+  const scaleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = sectionRef.current;
+    const el = scaleRef.current;
     if (!el) return;
     let raf = 0;
     const onScroll = () => {
@@ -52,17 +54,14 @@ export function SpotlightSection({ product }: { product: ProductWithRelations | 
   }, [product.description]);
 
   return (
-    <section
-      ref={sectionRef}
-      data-reveal
+    <SectionReveal
+      stagger
       className="relative overflow-hidden"
       style={{
-        minHeight: '100vh',
-        background: '#050e2a',
-        transformOrigin: 'center center',
-        transition: 'transform 0.12s linear',
+        background: 'linear-gradient(180deg, var(--bg2) 0%, var(--bg) 55%, var(--bg2) 100%)',
       }}
     >
+      <div ref={scaleRef} className="relative origin-center transition-transform duration-100 ease-linear">
       <div
         className="absolute inset-0"
         style={{
@@ -73,7 +72,7 @@ export function SpotlightSection({ product }: { product: ProductWithRelations | 
         }}
       />
       <div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
           width: 700,
           height: 700,
@@ -82,8 +81,8 @@ export function SpotlightSection({ product }: { product: ProductWithRelations | 
         }}
       />
 
-      <div className="relative z-[2] max-w-[1300px] mx-auto px-6 md:px-10 lg:px-12 py-[100px] grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        <div data-reveal-child>
+      <div className="relative z-[2] mx-auto grid max-w-[1300px] grid-cols-1 items-center gap-12 px-6 pb-10 pt-14 md:gap-14 md:px-10 md:pb-12 md:pt-16 lg:grid-cols-2 lg:gap-16 lg:px-12 lg:pb-14 lg:pt-20">
+        <RevealItem>
           <p className="font-sans text-[10px] font-semibold uppercase tracking-[0.3em] text-[var(--cyan)] inline-flex items-center gap-3">
             <span className="inline-block w-7 h-px" style={{ background: 'rgba(0,200,255,0.7)' }} />
             Vendor Pick of the Week
@@ -136,9 +135,9 @@ export function SpotlightSection({ product }: { product: ProductWithRelations | 
               View Details
             </Link>
           </div>
-        </div>
+        </RevealItem>
 
-        <div data-reveal-child className="flex items-center justify-center relative">
+        <RevealItem className="relative flex items-center justify-center">
           <div
             className="absolute rounded-full border"
             style={{
@@ -159,7 +158,7 @@ export function SpotlightSection({ product }: { product: ProductWithRelations | 
           />
 
           <div
-            className="relative rounded-[20px] overflow-hidden flex items-center justify-center"
+            className="insync-landing-product-shine relative rounded-[20px] overflow-hidden flex items-center justify-center"
             style={{
               width: 320,
               height: 380,
@@ -206,7 +205,8 @@ export function SpotlightSection({ product }: { product: ProductWithRelations | 
           >
             {product.category.name}
           </div>
-        </div>
+        </RevealItem>
+      </div>
       </div>
 
       <style jsx global>{`
@@ -248,7 +248,7 @@ export function SpotlightSection({ product }: { product: ProductWithRelations | 
           }
         }
       `}</style>
-    </section>
+    </SectionReveal>
   );
 }
 

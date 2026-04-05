@@ -1,19 +1,10 @@
 'use client';
 
-import { Suspense, useState, useMemo, useEffect } from 'react';
+import { Suspense, useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import {
-  ShoppingBag,
-  Store,
-  CheckCircle,
-  Check,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
+import { ShoppingBag, Store, Check, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { registerUser, setPasswordAfterGoogle } from '@/actions/user.actions';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 
@@ -37,11 +28,15 @@ const strengthLabel: Record<number, string> = {
 
 const strengthColor: Record<number, string> = {
   0: 'var(--surface3)',
-  1: '#e85555',
-  2: '#4a90e2',
-  3: '#4caf7d',
-  4: '#4caf7d',
+  1: '#ff6b6b',
+  2: 'var(--blue)',
+  3: 'var(--cyan)',
+  4: 'var(--cyan)',
 };
+
+function stagger(i: number) {
+  return { animationDelay: `${0.12 + i * 0.08}s` } as const;
+}
 
 function RegisterPageContent() {
   const router = useRouter();
@@ -64,6 +59,7 @@ function RegisterPageContent() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const emailParam = searchParams.get('email');
@@ -72,13 +68,22 @@ function RegisterPageContent() {
     if (nameParam) {
       const parts = decodeURIComponent(nameParam).trim().split(/\s+/);
       if (parts.length >= 2) {
-        setFirstName(parts[0]);
+        setFirstName(parts[0]!);
         setLastName(parts.slice(1).join(' '));
       } else if (parts.length === 1) {
-        setFirstName(parts[0]);
+        setFirstName(parts[0]!);
       }
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!error) return;
+    const f = formRef.current;
+    if (!f) return;
+    f.classList.remove('insync-shake');
+    void f.offsetWidth;
+    f.classList.add('insync-shake');
+  }, [error]);
 
   const strength = useMemo(() => passwordStrength(password), [password]);
   const needsPassword = (session?.user as { needsPassword?: boolean } | undefined)?.needsPassword;
@@ -155,27 +160,30 @@ function RegisterPageContent() {
   };
 
   if (showSetPasswordForm && session?.user) {
+    let si = 0;
     return (
       <>
-        <div className="mb-6">
-          <h1 className="font-display text-[32px] sm:text-[36px] font-light" style={{ color: 'var(--text)' }}>
+        <div className="auth-stagger-fade mb-6" style={stagger(si++)}>
+          <h1 className="font-display text-[32px] font-bold text-white sm:text-[36px]" style={{ fontWeight: 700 }}>
             Set your password
           </h1>
-          <p className="text-[14px] mt-2" style={{ color: 'var(--text-3)' }}>
+          <p className="mt-2 font-sans text-[14px] text-[var(--muted)]">
             You signed in with Google. Choose a password to complete your account.
           </p>
         </div>
-        <form onSubmit={handleSetPassword} className="space-y-4">
-          <div className="input-group">
-            <label className="input-label">Name</label>
-            <p className="text-[14px] py-2" style={{ color: 'var(--text-2)' }}>{session.user.name ?? '—'}</p>
+        <form ref={formRef} onSubmit={handleSetPassword} className="space-y-0">
+          <div className="auth-stagger-fade input-group" style={stagger(si++)}>
+            <span className="insync-field-label">Name</span>
+            <p className="font-sans text-[14px] py-2 text-[var(--white)]">{session.user.name ?? '—'}</p>
           </div>
-          <div className="input-group">
-            <label className="input-label">Email</label>
-            <p className="text-[14px] py-2" style={{ color: 'var(--text-2)' }}>{session.user.email ?? '—'}</p>
+          <div className="auth-stagger-fade input-group" style={stagger(si++)}>
+            <span className="insync-field-label">Email</span>
+            <p className="font-sans text-[14px] py-2 text-[var(--white)]">{session.user.email ?? '—'}</p>
           </div>
-          <div className="input-group">
-            <label htmlFor="complete-password" className="input-label">Password</label>
+          <div className="auth-stagger-fade input-group" style={stagger(si++)}>
+            <label htmlFor="complete-password" className="insync-field-label">
+              Password
+            </label>
             <div className="relative">
               <input
                 id="complete-password"
@@ -190,16 +198,19 @@ function RegisterPageContent() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg flex items-center justify-center border-0 bg-transparent cursor-pointer"
-                style={{ color: 'var(--text-4)' }}
+                className={`absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg border-0 bg-transparent transition-all duration-200 hover:bg-[var(--glass)] ${
+                  showPassword ? 'text-[var(--cyan)]' : 'text-[var(--muted)]'
+                }`}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
-          <div className="input-group">
-            <label htmlFor="complete-confirm" className="input-label">Confirm password</label>
+          <div className="auth-stagger-fade input-group" style={stagger(si++)}>
+            <label htmlFor="complete-confirm" className="insync-field-label">
+              Confirm password
+            </label>
             <div className="relative">
               <input
                 id="complete-confirm"
@@ -213,102 +224,130 @@ function RegisterPageContent() {
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg flex items-center justify-center border-0 bg-transparent cursor-pointer"
-                style={{ color: 'var(--text-4)' }}
+                className={`absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg border-0 bg-transparent transition-all duration-200 hover:bg-[var(--glass)] ${
+                  showConfirm ? 'text-[var(--cyan)]' : 'text-[var(--muted)]'
+                }`}
                 aria-label={showConfirm ? 'Hide password' : 'Show password'}
               >
-                {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
           {error && (
-            <div className="flex items-center gap-2.5 rounded-xl px-4 py-3 border" style={{ background: 'var(--red-bg)', borderColor: 'rgba(239,68,68,0.25)' }}>
-              <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--red)' }} />
-              <span className="text-[13px]" style={{ color: 'var(--red)' }}>{error}</span>
+            <div
+              className="auth-stagger-fade mb-4 flex items-center gap-2.5 rounded-[10px] border border-[rgba(255,77,77,0.35)] px-4 py-3"
+              style={{ ...stagger(si++), background: 'rgba(255,77,77,0.08)' }}
+            >
+              <AlertCircle className="h-4 w-4 shrink-0 text-[#ff6b6b]" />
+              <span className="auth-error-text m-0">{error}</span>
             </div>
           )}
-          <button
-            type="submit"
-            className="auth-submit-btn w-full py-4 rounded-xl text-[14px] font-semibold border-0 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70"
-            disabled={loading}
-          >
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Setting password…</> : 'Set password'}
-          </button>
+          <div className="auth-stagger-fade pt-2" style={stagger(si++)}>
+            <button
+              type="submit"
+              className="auth-submit-btn flex w-full items-center justify-center gap-2 border-0 px-4 py-4 disabled:opacity-70"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Setting password…
+                </>
+              ) : (
+                'Set password'
+              )}
+            </button>
+          </div>
         </form>
       </>
     );
   }
 
+  let i = 0;
   return (
     <>
-      <div className="mb-5">
-        <h1 className="font-display text-[26px] sm:text-[28px] font-bold" style={{ color: 'var(--text)' }}>
+      <div className="auth-stagger-fade mb-5" style={stagger(i++)}>
+        <h1 className="font-display text-[28px] font-bold text-white sm:text-[32px]" style={{ fontWeight: 700 }}>
           Create account
         </h1>
-        <p className="text-[14px] mt-2 font-normal" style={{ color: 'var(--text-3)' }}>
-          Join <span className="font-semibold">Insync</span><span style={{ color: '#4a90e2' }}>X</span> and start shopping or selling
+        <p className="mt-2 font-sans text-[14px] font-normal text-[var(--muted)]">
+          Join <span className="text-gradient-insync font-semibold">InsyncX</span> and start shopping or selling
         </p>
         {fromGoogle && (
-          <p className="text-[12px] mt-2" style={{ color: '#4a90e2' }}>
-            Complete sign-up with a password below.
-          </p>
+          <p className="mt-2 font-sans text-[12px] text-[var(--cyan)]">Complete sign-up with a password below.</p>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-0">
-        <div className="input-group" style={{ marginBottom: 16 }}>
-          <label className="input-label mb-2">I want to</label>
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-0">
+        <div className="auth-stagger-fade input-group" style={stagger(i++)}>
+          <span className="insync-field-label mb-2">I want to</span>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setRole('CUSTOMER')}
-              className="relative border-2 rounded-xl p-4 sm:p-5 text-center cursor-pointer transition-all duration-200"
-              style={{
-                borderColor: role === 'CUSTOMER' ? 'var(--line-gold)' : 'var(--line)',
-                background: role === 'CUSTOMER' ? 'var(--gold-bg)' : 'var(--surface2)',
-                boxShadow: role === 'CUSTOMER' ? '0 0 0 2px rgba(74,144,226,0.15)' : 'none',
-              }}
+              className={`relative rounded-[12px] border p-4 text-center transition-all duration-300 ease-out sm:p-5 ${
+                role === 'CUSTOMER'
+                  ? 'border-[var(--blue)] bg-[rgba(29,110,255,0.15)] shadow-[0_0_20px_rgba(29,110,255,0.2)]'
+                  : 'border-[var(--border)] bg-[var(--card-bg)]'
+              }`}
             >
-              {role === 'CUSTOMER' && (
-                <CheckCircle className="absolute top-2.5 right-2.5 w-4 h-4" style={{ color: 'var(--gold)' }} />
-              )}
+              <Check
+                className={`absolute right-2.5 top-2.5 h-4 w-4 text-[var(--cyan)] transition-transform duration-200 ${
+                  role === 'CUSTOMER' ? 'scale-100' : 'scale-0'
+                }`}
+                strokeWidth={3}
+              />
               <div
-                className="w-9 h-9 rounded-full mx-auto mb-2.5 flex items-center justify-center"
-                style={{ background: role === 'CUSTOMER' ? 'rgba(74,144,226,0.2)' : 'var(--surface3)' }}
+                className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-300"
+                style={{
+                  background: 'rgba(29,110,255,0.2)',
+                  boxShadow: '0 0 16px rgba(29,110,255,0.25)',
+                }}
               >
-                <ShoppingBag className="w-4 h-4" style={{ color: role === 'CUSTOMER' ? 'var(--gold)' : 'var(--text-3)' }} />
+                <ShoppingBag className="h-4 w-4 text-[var(--blue)]" />
               </div>
-              <div className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>Shop</div>
-              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>Browse & buy</div>
+              <div className="font-sans text-[13px] font-semibold text-white">Shop</div>
+              <div className="mt-0.5 font-sans text-[11px] text-[var(--muted)]">Browse & buy</div>
             </button>
             <button
               type="button"
               onClick={() => setRole('VENDOR')}
-              className="relative border-2 rounded-xl p-4 sm:p-5 text-center cursor-pointer transition-all duration-200"
-              style={{
-                borderColor: role === 'VENDOR' ? 'var(--line-gold)' : 'var(--line)',
-                background: role === 'VENDOR' ? 'var(--gold-bg)' : 'var(--surface2)',
-                boxShadow: role === 'VENDOR' ? '0 0 0 2px rgba(74,144,226,0.15)' : 'none',
-              }}
+              className={`relative rounded-[12px] border p-4 text-center transition-all duration-300 ease-out sm:p-5 ${
+                role === 'VENDOR'
+                  ? 'border-[var(--blue)] bg-[rgba(29,110,255,0.15)] shadow-[0_0_20px_rgba(29,110,255,0.2)]'
+                  : 'border-[var(--border)] bg-[var(--card-bg)]'
+              }`}
             >
-              {role === 'VENDOR' && (
-                <CheckCircle className="absolute top-2.5 right-2.5 w-4 h-4" style={{ color: 'var(--gold)' }} />
-              )}
+              <Check
+                className={`absolute right-2.5 top-2.5 h-4 w-4 text-[var(--cyan)] transition-transform duration-200 ${
+                  role === 'VENDOR' ? 'scale-100' : 'scale-0'
+                }`}
+                strokeWidth={3}
+              />
               <div
-                className="w-9 h-9 rounded-full mx-auto mb-2.5 flex items-center justify-center"
-                style={{ background: role === 'VENDOR' ? 'rgba(74,144,226,0.2)' : 'var(--surface3)' }}
+                className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-300"
+                style={{
+                  background: 'rgba(29,110,255,0.2)',
+                  boxShadow: '0 0 16px rgba(29,110,255,0.25)',
+                }}
               >
-                <Store className="w-4 h-4" style={{ color: role === 'VENDOR' ? 'var(--gold)' : 'var(--text-3)' }} />
+                <Store className="h-4 w-4 text-[var(--blue)]" />
               </div>
-              <div className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>Sell</div>
-              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-3)' }}>Open your store</div>
+              <div className="font-sans text-[13px] font-semibold text-white">Sell</div>
+              <div className="mt-0.5 font-sans text-[11px] text-[var(--muted)]">Open your store</div>
             </button>
           </div>
         </div>
 
-        <div className="input-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div
+          className="auth-stagger-fade my-5 border-t border-[var(--border)] pt-5"
+          style={stagger(i++)}
+        />
+
+        <div className="auth-stagger-fade grid grid-cols-2 gap-3" style={stagger(i++)}>
           <div>
-            <label htmlFor="firstName" className="input-label">First name</label>
+            <label htmlFor="firstName" className="insync-field-label">
+              First name
+            </label>
             <input
               id="firstName"
               type="text"
@@ -320,7 +359,9 @@ function RegisterPageContent() {
             />
           </div>
           <div>
-            <label htmlFor="lastName" className="input-label">Last name</label>
+            <label htmlFor="lastName" className="insync-field-label">
+              Last name
+            </label>
             <input
               id="lastName"
               type="text"
@@ -332,8 +373,11 @@ function RegisterPageContent() {
             />
           </div>
         </div>
-        <div className="input-group">
-          <label htmlFor="email" className="input-label">Email</label>
+
+        <div className="auth-stagger-fade input-group" style={stagger(i++)}>
+          <label htmlFor="email" className="insync-field-label">
+            Email
+          </label>
           <input
             id="email"
             type="email"
@@ -344,8 +388,11 @@ function RegisterPageContent() {
             required
           />
         </div>
-        <div className="input-group">
-          <label htmlFor="phone" className="input-label">Phone number</label>
+
+        <div className="auth-stagger-fade input-group" style={stagger(i++)}>
+          <label htmlFor="phone" className="insync-field-label">
+            Phone number
+          </label>
           <input
             id="phone"
             type="tel"
@@ -355,8 +402,16 @@ function RegisterPageContent() {
             onChange={(e) => setPhone(e.target.value)}
           />
         </div>
-        <div className="input-group">
-          <label htmlFor="password" className="input-label">Password</label>
+
+        <div
+          className="auth-stagger-fade my-5 border-t border-[var(--border)] pt-1"
+          style={stagger(i++)}
+        />
+
+        <div className="auth-stagger-fade input-group" style={stagger(i++)}>
+          <label htmlFor="password" className="insync-field-label">
+            Password
+          </label>
           <div className="relative">
             <input
               id="password"
@@ -371,32 +426,36 @@ function RegisterPageContent() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors hover:bg-white/5"
-              style={{ color: 'var(--text-4)' }}
+              className={`absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg border-0 bg-transparent transition-all duration-200 hover:bg-[var(--glass)] ${
+                showPassword ? 'text-[var(--cyan)]' : 'text-[var(--muted)]'
+              }`}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <div className="flex gap-1.5 mt-2">
-            {[0, 1, 2, 3].map((i) => (
+          <div className="mt-2 flex gap-1.5">
+            {[0, 1, 2, 3].map((idx) => (
               <div
-                key={i}
+                key={idx}
                 className="flex-1 transition-colors duration-200"
                 style={{
                   height: 3,
                   borderRadius: 2,
-                  background: i < strength ? strengthColor[strength] : 'var(--surface3)',
+                  background: idx < strength ? strengthColor[strength] : 'var(--surface3)',
                 }}
               />
             ))}
           </div>
-          <p className="text-[11px] mt-1" style={{ color: strengthColor[strength] }}>
+          <p className="mt-1 font-sans text-[11px]" style={{ color: strengthColor[strength] }}>
             {strengthLabel[strength]}
           </p>
         </div>
-        <div className="input-group">
-          <label htmlFor="confirmPassword" className="input-label">Confirm password</label>
+
+        <div className="auth-stagger-fade input-group" style={stagger(i++)}>
+          <label htmlFor="confirmPassword" className="insync-field-label">
+            Confirm password
+          </label>
           <div className="relative">
             <input
               id="confirmPassword"
@@ -410,25 +469,29 @@ function RegisterPageContent() {
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg flex items-center justify-center border-0 bg-transparent cursor-pointer transition-colors hover:bg-white/5"
-              style={{ color: 'var(--text-4)' }}
+              className={`absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg border-0 bg-transparent transition-all duration-200 hover:bg-[var(--glass)] ${
+                showConfirm ? 'text-[var(--cyan)]' : 'text-[var(--muted)]'
+              }`}
               aria-label={showConfirm ? 'Hide password' : 'Show password'}
             >
-              {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
         </div>
 
         {role === 'VENDOR' && (
-          <div className="space-y-3 pt-3 border-t" style={{ borderColor: 'var(--line)' }}>
-            <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-4)' }}>
-              Store details
-            </p>
-            <p className="text-[12px] -mt-1" style={{ color: 'var(--text-4)' }}>
+          <div
+            className="auth-stagger-fade mt-4 space-y-3 border-t border-[var(--border)] pt-4"
+            style={stagger(i++)}
+          >
+            <p className="insync-field-label !mb-1">Store details</p>
+            <p className="font-sans text-[12px] text-[var(--muted)]">
               Your store will be reviewed and go live after approval. You can add products once it’s approved.
             </p>
-            <div className="input-group">
-              <label htmlFor="storeName" className="input-label">Store name</label>
+            <div className="input-group !mb-3">
+              <label htmlFor="storeName" className="insync-field-label">
+                Store name
+              </label>
               <input
                 id="storeName"
                 type="text"
@@ -440,7 +503,9 @@ function RegisterPageContent() {
               />
             </div>
             <div className="input-group">
-              <label htmlFor="storeSlug" className="input-label">Store URL slug</label>
+              <label htmlFor="storeSlug" className="insync-field-label">
+                Store URL slug
+              </label>
               <input
                 id="storeSlug"
                 type="text"
@@ -450,7 +515,7 @@ function RegisterPageContent() {
                 onChange={(e) => setStoreSlug(e.target.value)}
                 required={role === 'VENDOR'}
               />
-              <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-4)' }}>
+              <p className="mt-1.5 font-sans text-[11px] text-[var(--muted)]">
                 insyncx.store/store/{storeSlug || 'your-slug'}
               </p>
             </div>
@@ -459,56 +524,77 @@ function RegisterPageContent() {
 
         {error && (
           <div
-            className="flex items-center gap-2.5 rounded-xl px-4 py-3 border"
-            style={{ background: 'var(--red-bg)', borderColor: 'rgba(239,68,68,0.25)' }}
+            className="auth-stagger-fade mt-4 flex items-center gap-2.5 rounded-[10px] border border-[rgba(255,77,77,0.35)] px-4 py-3"
+            style={{ background: 'rgba(255,77,77,0.08)' }}
           >
-            <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--red)' }} />
-            <span className="text-[13px]" style={{ color: 'var(--red)' }}>{error}</span>
+            <AlertCircle className="h-4 w-4 shrink-0 text-[#ff6b6b]" />
+            <span className="auth-error-text m-0">{error}</span>
           </div>
         )}
 
-        <div className="flex items-start gap-3 mt-5 mb-5 pt-4 pb-4">
-          <input
-            type="checkbox"
-            id="agreeTerms"
-            checked={agreeTerms}
-            onChange={(e) => setAgreeTerms(e.target.checked)}
-            className="mt-0.5 w-5 h-5 rounded cursor-pointer shrink-0"
-          />
-          <label htmlFor="agreeTerms" className="text-[13px] cursor-pointer leading-snug" style={{ color: 'var(--text-3)' }}>
-            I agree to the{' '}
-            <Link href="/terms" className="hover:underline" style={{ color: 'var(--gold)' }}>Terms of Service</Link>
-            {' '}and{' '}
-            <Link href="/privacy" className="hover:underline" style={{ color: 'var(--gold)' }}>Privacy Policy</Link>
+        <div className="auth-stagger-fade my-6 border-t border-[var(--border)] pt-6" style={stagger(i++)}>
+          <label htmlFor="agreeTerms" className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              id="agreeTerms"
+              checked={agreeTerms}
+              onChange={(e) => setAgreeTerms(e.target.checked)}
+              className="peer sr-only"
+            />
+            <span
+              className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-transparent transition-all duration-200 ease-out peer-checked:border-[var(--blue)] peer-checked:bg-[var(--blue)]"
+            >
+              <Check
+                className={`h-3.5 w-3.5 text-white transition-transform duration-200 ease-out ${
+                  agreeTerms ? 'scale-100' : 'scale-0'
+                }`}
+                strokeWidth={3}
+              />
+            </span>
+            <span className="font-sans text-[13px] leading-snug text-[var(--muted)]">
+              I agree to the{' '}
+              <Link href="/terms" className="text-[var(--cyan)] transition-colors hover:underline">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" className="text-[var(--cyan)] transition-colors hover:underline">
+                Privacy Policy
+              </Link>
+            </span>
           </label>
         </div>
 
-        <button
-          type="submit"
-          className="auth-submit-btn w-full py-4 text-[14px] border-0 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Creating account…
-            </>
-          ) : (
-            'Create account'
-          )}
-        </button>
+        <div className="auth-stagger-fade pb-2" style={stagger(i++)}>
+          <button
+            type="submit"
+            className="auth-submit-btn flex w-full items-center justify-center gap-2 border-0 px-4 py-4 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Creating account…
+              </>
+            ) : (
+              'Create account'
+            )}
+          </button>
+        </div>
       </form>
 
-      <div className="flex items-center gap-4 my-8">
-        <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
-        <span className="text-[12px]" style={{ color: 'var(--text-4)' }}>or</span>
-        <div className="flex-1 h-px" style={{ background: 'var(--line)' }} />
+      <div className="auth-stagger-fade my-8 flex items-center gap-4" style={stagger(i++)}>
+        <div className="h-px flex-1 bg-[var(--border)]" />
+        <span className="font-sans text-[12px] text-[var(--muted)]">or</span>
+        <div className="h-px flex-1 bg-[var(--border)]" />
       </div>
-      <GoogleSignInButton callbackUrl="/auth/register" onConfigError={(m) => setError(m)} />
 
-      <p className="text-center text-[13px] mt-8" style={{ color: 'var(--text-3)' }}>
+      <div className="auth-stagger-fade" style={stagger(i++)}>
+        <GoogleSignInButton callbackUrl="/auth/register" onConfigError={(m) => setError(m)} />
+      </div>
+
+      <p className="auth-stagger-fade mt-8 text-center font-sans text-[13px] text-[var(--muted)]" style={stagger(i++)}>
         Already have an account?{' '}
-        <Link href="/auth/login" className="font-medium hover:underline" style={{ color: 'var(--gold)' }}>
+        <Link href="/auth/login" className="font-medium text-[var(--cyan)] transition-colors hover:underline">
           Sign in
         </Link>
       </p>
@@ -520,7 +606,7 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[240px] flex items-center justify-center font-sans text-[14px] text-[var(--text-3)]">
+        <div className="flex min-h-[240px] items-center justify-center font-sans text-[14px] text-[var(--muted)]">
           Loading…
         </div>
       }

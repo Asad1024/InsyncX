@@ -70,15 +70,10 @@ export function GoogleSignInButton({
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className="inline-flex items-center justify-center gap-2.5 w-full py-3.5 px-4 rounded-xl border border-[var(--line-md)] bg-[var(--surface2)] hover:bg-[var(--surface3)] hover:border-[var(--line)] transition-all duration-200 group disabled:opacity-70 disabled:cursor-not-allowed"
-      style={{ color: 'var(--text-2)' }}
+      className="inline-flex w-full items-center justify-center gap-2.5 rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.04)] px-4 py-3.5 font-sans text-[14px] font-medium text-[var(--white)] transition-all duration-200 ease-out hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-70"
     >
-      <GoogleIcon className="w-5 h-5 shrink-0" />
-      {!loading ? (
-        <span className="font-sans text-[14px] font-medium">{label}</span>
-      ) : (
-        <span className="font-sans text-[14px]">Redirecting…</span>
-      )}
+      <GoogleIcon className="h-5 w-5 shrink-0" />
+      {!loading ? <span>{label}</span> : <span>Redirecting…</span>}
     </button>
   );
 }

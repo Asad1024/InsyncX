@@ -38,7 +38,7 @@ export async function getFeaturedProducts() {
   });
 }
 
-export async function getLatestProducts(limit = 8) {
+export async function getLatestProducts(limit = 8, skip = 0) {
   return prisma.product.findMany({
     where: { isActive: true, ...storeVisibleWhere },
     include: {
@@ -47,6 +47,7 @@ export async function getLatestProducts(limit = 8) {
     },
     orderBy: { createdAt: 'desc' },
     take: limit,
+    skip,
   });
 }
 

@@ -10,6 +10,8 @@ import { useCartStore } from '@/store/cart.store';
 import { addToCartDb } from '@/actions/cart.actions';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from 'next-auth/react';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 
 type ProductWithRelations = Product & {
   store: Pick<Store, 'name' | 'slug' | 'isOfficial'>;
@@ -56,7 +58,7 @@ function FlipCard({ product }: { product: ProductWithRelations }) {
     <Link
       href={`/product/${product.slug}`}
       data-cursor="interactive"
-      className="group relative block"
+      className="group relative block insync-landing-product-shine rounded-[16px]"
       style={{ perspective: 1100 }}
     >
       <div
@@ -169,10 +171,10 @@ function FlipCard({ product }: { product: ProductWithRelations }) {
 }
 
 export function OfficialPicksScroll({ products }: OfficialPicksScrollProps) {
-  const sectionRef = useRef<HTMLElement>(null);
+  const scaleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = sectionRef.current;
+    const el = scaleRef.current;
     if (!el) return;
     let raf = 0;
     const onScroll = () => {
@@ -195,20 +197,17 @@ export function OfficialPicksScroll({ products }: OfficialPicksScrollProps) {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      data-reveal
-      data-reveal-stagger="1"
-      className="relative py-[100px] px-6 md:px-10 lg:px-12 border-t overflow-hidden"
+    <SectionReveal
+      stagger
+      className="relative overflow-hidden border-t px-6 pt-12 pb-14 md:px-10 md:pt-14 md:pb-16 lg:px-12 lg:pt-16 lg:pb-20"
       style={{
         borderColor: 'rgba(29,110,255,0.15)',
-        background: '#050e2a',
-        transition: 'transform 0.12s linear',
+        background: 'linear-gradient(180deg, var(--bg) 0%, var(--bg2) 45%, var(--bg) 100%)',
       }}
     >
       {/* Grid texture overlay + pulsing glow */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
             'linear-gradient(rgba(29,110,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(29,110,255,0.08) 1px, transparent 1px)',
@@ -217,7 +216,7 @@ export function OfficialPicksScroll({ products }: OfficialPicksScrollProps) {
         }}
       />
       <div
-        className="absolute left-1/2 top-1/2 w-[900px] h-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
           background: 'radial-gradient(circle, rgba(29,110,255,0.18), transparent 62%)',
           filter: 'blur(10px)',
@@ -225,7 +224,8 @@ export function OfficialPicksScroll({ products }: OfficialPicksScrollProps) {
         }}
       />
 
-      <div data-reveal-child className="relative z-[2] flex items-center justify-between mb-10">
+      <div ref={scaleRef} className="origin-center transition-transform duration-100 ease-linear">
+      <RevealItem className="relative z-[2] mb-10 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.22em] text-[var(--cyan)] inline-flex items-center gap-3">
             <span className="inline-block w-7 h-px" style={{ background: 'rgba(0,200,255,0.7)' }} />
@@ -277,13 +277,14 @@ export function OfficialPicksScroll({ products }: OfficialPicksScrollProps) {
             View All <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-      </div>
+      </RevealItem>
 
-      <div data-reveal-child className="relative z-[2] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <RevealItem className="relative z-[2] grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((product) => (
           <FlipCard key={product.id} product={product} />
         ))}
+      </RevealItem>
       </div>
-    </section>
+    </SectionReveal>
   );
 }

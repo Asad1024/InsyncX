@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 
 export function AmbientSection({ videoSrc = '/brand-story.mp4' }: { videoSrc?: string }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -141,8 +143,8 @@ export function AmbientSection({ videoSrc = '/brand-story.mp4' }: { videoSrc?: s
   );
 
   return (
-    <section
-      data-reveal
+    <SectionReveal
+      stagger
       className="relative overflow-hidden"
       style={{
         height: '88vh',
@@ -205,8 +207,8 @@ export function AmbientSection({ videoSrc = '/brand-story.mp4' }: { videoSrc?: s
         />
       </div>
 
-      <div className="relative z-[2] text-center px-6 md:px-10 lg:px-12 flex items-center justify-center h-full">
-        <div data-reveal-child className="max-w-[980px] mx-auto">
+      <div className="relative z-[2] flex h-full items-center justify-center px-6 text-center md:px-10 lg:px-12">
+        <RevealItem className="mx-auto max-w-[980px]">
           <div
             className="inline-flex items-center gap-3 font-sans text-[10px] font-semibold uppercase tracking-[0.3em]"
             style={{ color: 'var(--cyan)' }}
@@ -280,7 +282,7 @@ export function AmbientSection({ videoSrc = '/brand-story.mp4' }: { videoSrc?: s
               </div>
             ))}
           </div>
-        </div>
+        </RevealItem>
       </div>
 
       <style jsx global>{`
@@ -337,7 +339,7 @@ export function AmbientSection({ videoSrc = '/brand-story.mp4' }: { videoSrc?: s
           }
         }
       `}</style>
-    </section>
+    </SectionReveal>
   );
 }
 

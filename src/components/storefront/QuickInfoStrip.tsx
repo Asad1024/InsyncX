@@ -1,4 +1,6 @@
 import { Truck, RotateCcw, Lock, Headphones } from 'lucide-react';
+import { SectionReveal } from '@/components/motion/SectionReveal';
+import { RevealItem } from '@/components/motion/RevealItem';
 
 const ITEMS = [
   { icon: Truck, title: 'Free Shipping', sub: 'On orders over ₹999' },
@@ -9,16 +11,17 @@ const ITEMS = [
 
 export function QuickInfoStrip() {
   return (
-    <section
-      data-reveal
-      className="border-t border-b py-10 px-6 md:px-10 lg:px-12"
+    <SectionReveal
+      stagger
+      id="about-info"
+      className="border-y px-6 py-10 md:px-10 lg:px-12 scroll-mt-[calc(var(--nav-h)+1rem)]"
       style={{
         borderColor: 'rgba(29,110,255,0.15)',
         background: 'rgba(6,18,50,0.5)',
         backdropFilter: 'blur(20px)',
       }}
     >
-      <div data-reveal-child className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-[var(--content-max)] mx-auto">
+      <RevealItem className="mx-auto grid max-w-[var(--content-max)] grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {ITEMS.map(({ icon: Icon, title, sub }, i) => (
           <div
             key={title}
@@ -42,7 +45,7 @@ export function QuickInfoStrip() {
             </p>
           </div>
         ))}
-      </div>
-    </section>
+      </RevealItem>
+    </SectionReveal>
   );
 }

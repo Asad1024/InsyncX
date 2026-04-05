@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Unbounded, Outfit } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { GlobalCursor } from '@/components/ui/GlobalCursor';
 import { Providers } from '@/components/providers';
 
 const outfit = Outfit({
@@ -13,7 +14,7 @@ const outfit = Outfit({
 
 const unbounded = Unbounded({
   subsets: ['latin'],
-  weight: ['700', '800', '900'],
+  weight: ['300', '400', '600', '700', '900'],
   variable: '--font-display',
   display: 'swap',
 });
@@ -42,6 +43,7 @@ export default function RootLayout({
     <html lang="en" className={`${outfit.variable} ${unbounded.variable} dark`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>
+          <GlobalCursor />
           {children}
           <Toaster />
         </Providers>
